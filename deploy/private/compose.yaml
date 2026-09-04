@@ -8,7 +8,7 @@ services:
     image: crm-demo:${CRM_IMAGE_TAG:-local}
     restart: unless-stopped
     env_file:
-      - /opt/crm-platform/secrets/crm-demo.env
+      - ${CRM_ENV_FILE:-/opt/crm-platform/secrets/crm-demo.env}
     command:
       - serve
       - --http=0.0.0.0:8090
@@ -51,6 +51,8 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:8080/api/health"]
       interval: 10s

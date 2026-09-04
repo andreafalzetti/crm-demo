@@ -13,7 +13,9 @@ REMOTE_ROOT="/opt/crm-platform/src/crm-demo"
 COMPOSE_FILE="deploy/private/compose.yaml"
 PB_KEY_PARAMETER="/crm-demo/production/demo/pocketbase/encryption-key"
 APP_PASSWORD_PARAMETER="/crm-demo/production/demo/app-user/password"
+SUPERUSER_PASSWORD_PARAMETER="/crm-demo/production/demo/pocketbase/superuser-password"
 APP_USER_EMAIL="${CRM_APP_USER_EMAIL:-demo@designferri.local}"
+SUPERUSER_EMAIL="${CRM_SUPERUSER_EMAIL:-admin@designferri.local}"
 
 for required_command in aws git mktemp scp ssh; do
   if ! command -v "${required_command}" >/dev/null 2>&1; then
@@ -55,6 +57,7 @@ get_secret() {
 
 pb_encryption_key="$(get_secret "${PB_KEY_PARAMETER}")"
 app_user_password="$(get_secret "${APP_PASSWORD_PARAMETER}")"
+superuser_password="$(get_secret "${SUPERUSER_PASSWORD_PARAMETER}")"
 
 if [[ ${#pb_encryption_key} -ne 32 ]]; then
   echo "La chiave PocketBase deve contenere esattamente 32 caratteri." >&2
@@ -64,12 +67,16 @@ if [[ -z "${app_user_password}" || "${app_user_password}" == "None" ]]; then
   echo "Password utente demo mancante in SSM." >&2
   exit 1
 fi
+if [[ -z "${superuser_password}" || "${superuser_password}" == "None" ]]; then
+  echo "Password superuser PocketBase mancante in SSM." >&2
+  exit 1
+fi
 
 umask 077
 env_file="$(mktemp "${TMPDIR:-/tmp}/crm-demo-env.XXXXXX")"
 cleanup() {
   rm -f "${env_file}"
-  unset pb_encryption_key app_user_password
+  unset pb_encryption_key app_user_password superuser_password
 }
 trap cleanup EXIT INT TERM
 printf 'PB_ENCRYPTION_KEY=%s\n' "${pb_encryption_key}" >"${env_file}"
@@ -95,6 +102,12 @@ ssh "${REMOTE_HOST}" "
   cd '${REMOTE_ROOT}'
   CRM_IMAGE_TAG='${commit}' docker compose -f '${COMPOSE_FILE}' build --pull
   CRM_IMAGE_TAG='${commit}' docker compose -f '${COMPOSE_FILE}' run --rm -T crm-demo migrate up --dir=/data --encryptionEnv=PB_ENCRYPTION_KEY
+"
+
+printf '%s\n' "${superuser_password}" | ssh "${REMOTE_HOST}" "
+  set -Eeuo pipefail
+  cd '${REMOTE_ROOT}'
+  CRM_IMAGE_TAG='${commit}' docker compose -f '${COMPOSE_FILE}' run --rm -T crm-demo app-superuser '${SUPERUSER_EMAIL}' --password-stdin --dir=/data --encryptionEnv=PB_ENCRYPTION_KEY
 "
 
 printf '%s\n' "${app_user_password}" | ssh "${REMOTE_HOST}" "

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 
 	_ "github.com/designferri/crm-demo/internal/migrations"
 	"github.com/designferri/crm-demo/internal/platform"
@@ -21,6 +19,7 @@ func main() {
 	platform.Register(app, crmModules()...)
 	registerStaticAssets(app)
 	registerUserCommand(app)
+	registerSuperuserCommand(app)
 	registerDemoSeedCommand(app)
 
 	if err := app.Start(); err != nil {
@@ -37,16 +36,7 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 		Short:        "Crea il primo utente applicativo",
 		SilenceUsage: true,
 		Args: func(command *cobra.Command, args []string) error {
-			if len(args) < 1 || len(args) > 2 {
-				return errors.New("specifica EMAIL e la password come argomento oppure con --password-stdin")
-			}
-			if passwordStdin && len(args) == 2 {
-				return errors.New("non specificare PASSWORD insieme a --password-stdin")
-			}
-			if !passwordStdin && len(args) != 2 {
-				return errors.New("PASSWORD mancante: usa l'argomento o --password-stdin")
-			}
-			return nil
+			return validatePasswordArgs(args, passwordStdin)
 		},
 		RunE: func(command *cobra.Command, args []string) error {
 			name, _ := command.Flags().GetString("name")
@@ -60,25 +50,9 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 					return nil
 				}
 			}
-			password := ""
-			if passwordStdin {
-				scanner := bufio.NewScanner(command.InOrStdin())
-				scanner.Buffer(make([]byte, 1024), 4096)
-				if !scanner.Scan() {
-					if err := scanner.Err(); err != nil {
-						return fmt.Errorf("lettura password da stdin: %w", err)
-					}
-					return errors.New("password vuota su stdin")
-				}
-				password = scanner.Text()
-				if scanner.Scan() {
-					return errors.New("la password su stdin deve essere una singola riga")
-				}
-			} else {
-				password = args[1]
-			}
-			if strings.TrimSpace(password) == "" {
-				return errors.New("la password non può essere vuota")
+			password, err := readPassword(command, args, passwordStdin)
+			if err != nil {
+				return err
 			}
 			role, err := app.FindFirstRecordByData("roles", "key", roleKey)
 			if err != nil {
