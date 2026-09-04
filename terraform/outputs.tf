@@ -29,6 +29,6 @@ output "tailscale_ssh_command" {
 }
 
 output "public_bootstrap_ssh_command" {
-  description = "Temporary public SSH command; it works only while public_ssh_cidrs allows the caller."
-  value       = "ssh ${var.admin_username}@${hcloud_server.platform.ipv4_address}"
+  description = "Temporary public SSH command, or null when the bootstrap firewall rule is closed."
+  value       = length(var.public_ssh_cidrs) > 0 ? "ssh ${var.admin_username}@${hcloud_server.platform.ipv4_address}" : null
 }
