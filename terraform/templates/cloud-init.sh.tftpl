@@ -1,0 +1,110 @@
+#!/bin/bash
+set -Eeuo pipefail
+
+exec > >(tee -a /var/log/crm-platform-bootstrap.log) 2>&1
+
+ADMIN_USERNAME=${jsonencode(admin_username)}
+SSH_PUBLIC_KEY_B64=${jsonencode(base64encode(ssh_public_key))}
+PUBLIC_SSH_CIDRS=${jsonencode(join(" ", public_ssh_cidrs))}
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+apt-get upgrade -y
+apt-get install -y \
+  ca-certificates \
+  curl \
+  fail2ban \
+  gnupg \
+  jq \
+  unattended-upgrades \
+  ufw
+
+if ! id "$ADMIN_USERNAME" >/dev/null 2>&1; then
+  useradd --create-home --shell /bin/bash "$ADMIN_USERNAME"
+fi
+usermod --append --groups sudo "$ADMIN_USERNAME"
+printf '%s ALL=(ALL:ALL) NOPASSWD:ALL\n' "$ADMIN_USERNAME" > "/etc/sudoers.d/$ADMIN_USERNAME"
+chmod 0440 "/etc/sudoers.d/$ADMIN_USERNAME"
+
+ADMIN_HOME="$(getent passwd "$ADMIN_USERNAME" | cut -d: -f6)"
+install -d -o "$ADMIN_USERNAME" -g "$ADMIN_USERNAME" -m 0700 "$ADMIN_HOME/.ssh"
+printf '%s' "$SSH_PUBLIC_KEY_B64" | base64 --decode > "$ADMIN_HOME/.ssh/authorized_keys"
+printf '\n' >> "$ADMIN_HOME/.ssh/authorized_keys"
+chown "$ADMIN_USERNAME:$ADMIN_USERNAME" "$ADMIN_HOME/.ssh/authorized_keys"
+chmod 0600 "$ADMIN_HOME/.ssh/authorized_keys"
+
+cat > /etc/ssh/sshd_config.d/99-crm-platform.conf <<'SSH_CONFIG'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PermitRootLogin no
+PubkeyAuthentication yes
+MaxAuthTries 3
+ClientAliveInterval 300
+ClientAliveCountMax 2
+SSH_CONFIG
+sshd -t
+systemctl restart ssh
+
+# Docker Engine and Compose plugin from Docker's official Ubuntu repository.
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+. /etc/os-release
+printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu %s stable\n' \
+  "$(dpkg --print-architecture)" "$VERSION_CODENAME" \
+  > /etc/apt/sources.list.d/docker.list
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl enable --now docker
+usermod --append --groups docker "$ADMIN_USERNAME"
+
+# Tailscale is the administrative network. OpenSSH remains the SSH server;
+# enrollment is intentionally interactive so no auth key reaches user_data or
+# Terraform state. Tailscale SSH is intentionally disabled.
+curl -fsSL https://tailscale.com/install.sh | sh
+
+cat > /etc/fail2ban/jail.local <<'FAIL2BAN'
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+banaction = ufw
+ignoreip = 127.0.0.1/8 ::1 ${join(" ", public_ssh_cidrs)}
+
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 24h
+FAIL2BAN
+systemctl enable --now fail2ban
+
+# The Hetzner firewall is the outer boundary. UFW is defense in depth. Docker
+# published ports can bypass UFW, so Compose must publish only 80/443.
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 443/udp
+ufw allow 41641/udp
+ufw allow in on tailscale0 to any port 22 proto tcp
+for cidr in $PUBLIC_SSH_CIDRS; do
+  ufw allow from "$cidr" to any port 22 proto tcp
+done
+ufw --force enable
+
+cat > /etc/apt/apt.conf.d/20auto-upgrades <<'AUTO_UPGRADES'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+AUTO_UPGRADES
+systemctl enable unattended-upgrades
+
+install -d -o "$ADMIN_USERNAME" -g "$ADMIN_USERNAME" -m 0750 /opt/crm-platform
+install -d -o "$ADMIN_USERNAME" -g "$ADMIN_USERNAME" -m 0750 /srv/crm-data
+install -d -o root -g root -m 0700 /var/backups/crm-platform
+install -d -o root -g root -m 0755 /var/lib/crm-platform
+date --iso-8601=seconds > /var/lib/crm-platform/bootstrap-complete

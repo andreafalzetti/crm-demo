@@ -1,0 +1,12 @@
+# This bucket and KMS key are managed by git@github.com:andreafalzetti/aws.git.
+# Local runs use AWS_PROFILE=andrea; CI should authenticate with GitHub OIDC.
+bucket       = "andreafalzetti-terraform-state-766515626185-eu-central-1"
+key          = "crm-demo/hetzner/production.tfstate"
+region       = "eu-central-1"
+use_lockfile = true
+encrypt      = true
+kms_key_id   = "arn:aws:kms:eu-central-1:766515626185:key/fbc02456-8c21-44c6-a079-dfeabb15516e"
+
+# Keep this only in the ignored local backend.hcl. Remove it in CI, where the
+# backend receives short-lived credentials from GitHub OIDC.
+# profile = "andrea"

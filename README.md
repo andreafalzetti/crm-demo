@@ -129,3 +129,11 @@ Con l'app già avviata, `scripts/ui_smoke.py` verifica inoltre i cinque moduli, 
 - non esporre pubblicamente la console PocketBase senza adeguate restrizioni di rete.
 
 Il modello previsto è **un'istanza per cliente**: isolamento semplice, personalizzazioni indipendenti e deploy/backup separati. Non è uno schema multi-tenant condiviso.
+
+### Infrastruttura Hetzner
+
+La directory [`terraform/`](terraform/) contiene il provisioning della VPS
+Hetzner dedicata a Docker Compose, n8n e alle demo CRM. Account Hetzner,
+tailnet Tailscale e state backend sono intenzionalmente separati
+dall'infrastruttura OFC. Consulta [`terraform/README.md`](terraform/README.md)
+prima di inizializzare o applicare il modulo.

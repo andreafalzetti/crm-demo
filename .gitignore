@@ -37,6 +37,19 @@ __pycache__/
 # PocketBase runtime data
 **/pb_data/
 
+# Terraform runtime data and local configuration
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+**/backend.hcl
+!**/backend.hcl.example
+crash.log
+crash.*.log
+terraform/plan.out
+
 # Browser test artifacts
 **/test-results/
 **/playwright-report/

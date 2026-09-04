@@ -1,0 +1,21 @@
+project_name = "crm-platform"
+environment  = "production"
+location     = "fsn1"
+server_type  = "cpx32"
+
+admin_username = "deploy"
+
+# Prefer setting this value at runtime:
+# export TF_VAR_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+# ssh_public_key = "ssh-ed25519 AAAA... your-name"
+
+# For an interactive Tailscale bootstrap, temporarily allow only your current
+# public IP, apply, join the tailnet, verify access, then set this back to [].
+public_ssh_cidrs = ["203.0.113.10/32"]
+
+# Tailscale enrollment is interactive so its credentials never enter
+# cloud-init or Terraform state.
+tailscale_hostname = "crm-platform-production"
+
+enable_backups = true
+protect_server = true
