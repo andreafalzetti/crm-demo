@@ -150,6 +150,10 @@ E2E_EMAIL=admin@example.test E2E_PASSWORD='UnaPasswordLunga!' mise exec -- pnpm 
 
 Con l'app già avviata, `scripts/ui_smoke.py` verifica inoltre i cinque moduli, le relazioni tra cliente/interventi/preventivi e il download del PDF generato lato server.
 
+`scripts/assistant_ui_smoke.py` verifica separatamente apertura del pannello,
+invio di un messaggio e rendering del link restituito dall'agente. Accetta
+`E2E_BASE_URL` per collaudare anche la demo privata pubblicata via Tailscale.
+
 ## Produzione
 
 - servi Vite come asset statici e il binario Go/PocketBase dietro lo stesso reverse proxy;

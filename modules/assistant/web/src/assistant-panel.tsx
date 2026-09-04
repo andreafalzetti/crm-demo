@@ -139,7 +139,7 @@ export function AssistantPanel() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="sm" className="gap-2 shadow-sm">
+        <Button size="sm" className="gap-2 shadow-sm" aria-label="Assistente">
           <Sparkles className="size-4" />
           <span className="hidden md:inline">Assistente</span>
         </Button>
