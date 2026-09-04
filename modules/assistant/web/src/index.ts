@@ -1,0 +1,1 @@
+export { assistantModule } from "./module"

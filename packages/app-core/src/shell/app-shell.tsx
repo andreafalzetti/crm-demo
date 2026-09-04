@@ -55,6 +55,9 @@ export function AppShell({ manifest }: { manifest: ClientManifest }) {
       permission: "core.audit.read",
     },
   ].filter((item) => can(item.permission))
+  const shellPanels = manifest.modules.flatMap((module) =>
+    (module.shellPanels ?? []).filter((panel) => can(panel.permission))
+  )
 
   const navigation = (
     <SidebarNavigation
@@ -107,6 +110,10 @@ export function AppShell({ manifest }: { manifest: ClientManifest }) {
               </kbd>
             </button>
             <div className="ml-auto flex items-center gap-2">
+              {shellPanels.map((panel) => {
+                const Panel = panel.component
+                return <Panel key={panel.id} />
+              })}
               <ThemeToggle />
               <div className="mx-1 h-6 w-px bg-border" />
               <Avatar className="size-8">

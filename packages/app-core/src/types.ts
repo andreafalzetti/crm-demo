@@ -20,6 +20,7 @@ export type CrmModule = {
   dependencies?: Array<{ id: string; optional?: boolean }>
   dashboardWidgets?: DashboardWidget[]
   customerDetails?: CustomerDetailContribution[]
+  shellPanels?: ShellPanelContribution[]
 }
 
 export type DashboardWidget = {
@@ -34,6 +35,12 @@ export type CustomerDetailContribution = {
   label: string
   permission?: string
   component: ComponentType<{ organizationId: string }>
+}
+
+export type ShellPanelContribution = {
+  id: string
+  permission?: string
+  component: ComponentType
 }
 
 export type NavigationGroup = {

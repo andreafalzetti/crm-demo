@@ -16,6 +16,11 @@ services:
       - --encryptionEnv=PB_ENCRYPTION_KEY
     volumes:
       - /srv/crm-data/crm-demo:/data
+    networks:
+      default:
+      assistant:
+        aliases:
+          - crm-demo-assistant
     expose:
       - "8090"
     read_only: true
@@ -63,3 +68,8 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
+networks:
+  assistant:
+    external: true
+    name: crm-assistant

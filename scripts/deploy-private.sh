@@ -14,6 +14,7 @@ COMPOSE_FILE="deploy/private/compose.yaml"
 PB_KEY_PARAMETER="/crm-demo/production/demo/pocketbase/encryption-key"
 APP_PASSWORD_PARAMETER="/crm-demo/production/demo/app-user/password"
 SUPERUSER_PASSWORD_PARAMETER="/crm-demo/production/demo/pocketbase/superuser-password"
+ASSISTANT_SECRET_PARAMETER="/crm-demo/production/demo/assistant/shared-secret"
 APP_USER_EMAIL="${CRM_APP_USER_EMAIL:-demo@designferri.local}"
 SUPERUSER_EMAIL="${CRM_SUPERUSER_EMAIL:-admin@designferri.local}"
 
@@ -58,6 +59,7 @@ get_secret() {
 pb_encryption_key="$(get_secret "${PB_KEY_PARAMETER}")"
 app_user_password="$(get_secret "${APP_PASSWORD_PARAMETER}")"
 superuser_password="$(get_secret "${SUPERUSER_PASSWORD_PARAMETER}")"
+assistant_shared_secret="$(get_secret "${ASSISTANT_SECRET_PARAMETER}")"
 
 if [[ ${#pb_encryption_key} -ne 32 ]]; then
   echo "La chiave PocketBase deve contenere esattamente 32 caratteri." >&2
@@ -71,15 +73,21 @@ if [[ -z "${superuser_password}" || "${superuser_password}" == "None" ]]; then
   echo "Password superuser PocketBase mancante in SSM." >&2
   exit 1
 fi
+if [[ ${#assistant_shared_secret} -lt 32 ]]; then
+  echo "Segreto condiviso assistente mancante o troppo corto in SSM." >&2
+  exit 1
+fi
 
 umask 077
 env_file="$(mktemp "${TMPDIR:-/tmp}/crm-demo-env.XXXXXX")"
 cleanup() {
   rm -f "${env_file}"
-  unset pb_encryption_key app_user_password superuser_password
+  unset pb_encryption_key app_user_password superuser_password assistant_shared_secret
 }
 trap cleanup EXIT INT TERM
 printf 'PB_ENCRYPTION_KEY=%s\n' "${pb_encryption_key}" >"${env_file}"
+printf 'CRM_ASSISTANT_SHARED_SECRET=%s\n' "${assistant_shared_secret}" >>"${env_file}"
+printf 'CRM_ASSISTANT_N8N_URL=http://n8n-assistant:5678/webhook/crm-assistant\n' >>"${env_file}"
 
 ssh "${REMOTE_HOST}" "
   set -Eeuo pipefail
@@ -91,6 +99,7 @@ ssh "${REMOTE_HOST}" "
   git -C '${REMOTE_ROOT}' checkout --detach '${commit}'
   sudo install -d -m 0750 -o root -g docker /opt/crm-platform/secrets
   sudo install -d -m 0750 -o deploy -g deploy /srv/crm-data/crm-demo
+  docker network inspect crm-assistant >/dev/null 2>&1 || docker network create crm-assistant >/dev/null
 "
 
 remote_env_file="/tmp/crm-demo.env.${commit}"

@@ -22,6 +22,7 @@ export function defineClientManifest(manifest: ClientManifest): ClientManifest {
     for (const contribution of [
       ...(module.dashboardWidgets ?? []),
       ...(module.customerDetails ?? []),
+      ...(module.shellPanels ?? []),
     ]) {
       const key = `${module.id}:${contribution.id}`
       if (contributions.has(key))

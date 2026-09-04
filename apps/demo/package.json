@@ -18,6 +18,7 @@
     "@crm/address-book": "workspace:*",
     "@crm/agenda": "workspace:*",
     "@crm/appointments": "workspace:*",
+    "@crm/assistant": "workspace:*",
     "@crm/app-core": "workspace:*",
     "@crm/payments": "workspace:*",
     "@crm/personnel": "workspace:*",

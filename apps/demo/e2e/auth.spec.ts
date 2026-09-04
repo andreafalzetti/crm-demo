@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test"
 const EXPECTED_MODULES = [
   "address-book",
   "agenda",
+  "assistant",
   "personnel",
   "quotes",
   "work-items",

@@ -14,6 +14,7 @@ Scaffold modulare per realizzare piccoli CRM verticali, uno per cliente, con Poc
 - mock del verticale medico con tipi di appuntamento, disponibilità e regole di distribuzione;
 - mock del modulo pagamenti, collegabile agli appuntamenti e predisposto per canali online e fisici;
 - audit trail per le modifiche alle collezioni operative e amministrative;
+- assistente AI interno con strumenti CRM, delega RBAC e conferma umana delle scritture;
 - UI responsive, tema chiaro/scuro e design system condiviso basato su shadcn/ui;
 - migrazioni Go versionate e hook backend per le regole non esprimibili nel solo schema;
 - generatore CLI per derivare una nuova istanza cliente dal template demo.
@@ -67,6 +68,7 @@ Il generatore copia l'app demo senza dati runtime o seed dimostrativi, modifica 
 - `work-items`: incarichi, interventi, eventi o sedute;
 - `agenda`: calendario condiviso;
 - `quotes`: preventivi e generazione PDF.
+- `assistant`: assistente AI n8n/OpenRouter, opt-in perché richiede il servizio esterno e i secret runtime.
 
 È possibile creare una variante più piccola, per esempio:
 
@@ -93,6 +95,7 @@ modules/address-book/backend/ hook, permission catalog e migrazioni del modulo
 modules/personnel/             personale, presenze, ferie e assenze
 modules/work-items/            incarichi/interventi e assegnazioni
 modules/agenda/                calendario operativo condiviso
+modules/assistant/             pannello AI, API delegate, strumenti e proposte di modifica
 modules/quotes/                preventivi, righe e generatore PDF
 modules/appointments/web/      anteprima UX per prenotazioni e distribuzione
 modules/payments/web/          anteprima UX per incassi online e fisici
@@ -101,7 +104,28 @@ internal/migrations/          schema e seed del nucleo CRM
 tools/create-crm.mjs          generatore di nuove istanze
 ```
 
-Ogni istanza possiede un `client.ts` che compone i moduli e definisce nome, sigla e colore. Un modulo frontend può contribuire navigazione, route, widget di panoramica e tab nella scheda cliente. La controparte Go espone permessi e hook; le migrazioni definiscono lo schema PocketBase. `server/modules.go` è il registro backend corrispondente e viene generato insieme al manifest React.
+Ogni istanza possiede un `client.ts` che compone i moduli e definisce nome, sigla e colore. Un modulo frontend può contribuire navigazione, route, widget di panoramica, tab nella scheda cliente e pannelli globali della shell. La controparte Go espone permessi e hook; le migrazioni definiscono lo schema PocketBase. `server/modules.go` è il registro backend corrispondente e viene generato insieme al manifest React.
+
+### Assistente AI
+
+La demo include il modulo `assistant`, collegato all'istanza n8n indipendente. Il
+browser parla soltanto con PocketBase; il backend firma una delega breve per
+l'utente autenticato e inoltra il messaggio al webhook privato. Gli strumenti
+n8n possono leggere solo le operazioni di dominio allow-listate e ogni controllo
+riusa i permessi RBAC correnti.
+
+Le azioni di scrittura non modificano subito i dati: creano un record
+`assistant_actions` con scadenza. Soltanto il pulsante **Conferma** nella UI può
+eseguire la proposta; conferma, modifica finale e target vengono registrati
+nell'audit trail. La rete Docker `crm-assistant` collega i soli container
+applicativi senza esporre PocketBase, n8n o PostgreSQL su nuove porte.
+
+Variabili runtime richieste:
+
+```text
+CRM_ASSISTANT_SHARED_SECRET
+CRM_ASSISTANT_N8N_URL
+```
 
 `appointments` e `payments` sono marcati `preview`: compaiono nella demo con dati mock ma non vengono ancora aggiunti dal generatore, non registrano permessi backend e non persistono dati. La decisione di prodotto e il modello concettuale del verticale medico sono descritti in [`docs/verticals/medical-practice.md`](docs/verticals/medical-practice.md).
 

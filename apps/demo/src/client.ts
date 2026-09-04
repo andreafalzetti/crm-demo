@@ -1,6 +1,7 @@
 import { addressBookModule } from "@crm/address-book"
 import { agendaModule } from "@crm/agenda"
 import { appointmentsModule } from "@crm/appointments"
+import { assistantModule } from "@crm/assistant"
 import { defineClientManifest } from "@crm/app-core"
 import { paymentsModule } from "@crm/payments"
 import { personnelModule } from "@crm/personnel"
@@ -21,5 +22,6 @@ export const clientManifest = defineClientManifest({
     agendaModule,
     quotesModule,
     paymentsModule,
+    assistantModule,
   ],
 })

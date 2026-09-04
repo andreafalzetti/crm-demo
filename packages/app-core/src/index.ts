@@ -27,5 +27,6 @@ export type {
   NavItem,
   NavigationGroup,
   SessionPayload,
+  ShellPanelContribution,
   UserRecord,
 } from "./types"

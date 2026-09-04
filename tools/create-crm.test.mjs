@@ -22,6 +22,7 @@ async function fixture() {
         "@crm/address-book": "workspace:*",
         "@crm/agenda": "workspace:*",
         "@crm/app-core": "workspace:*",
+        "@crm/assistant": "workspace:*",
         "@crm/personnel": "workspace:*",
         "@crm/quotes": "workspace:*",
         "@crm/work-items": "workspace:*",
@@ -155,6 +156,29 @@ test("compone un sottoinsieme coerente di moduli frontend e backend", async () =
   assert.match(e2eTest, /\["address-book","personnel"\]/)
   assert.equal(packageJson.dependencies["@crm/agenda"], undefined)
   assert.equal(packageJson.dependencies["@crm/app-core"], "workspace:*")
+})
+
+test("aggiunge l'assistente soltanto quando richiesto", async () => {
+  const root = await fixture()
+  const result = await createCrm(
+    {
+      slug: "assisted",
+      name: "Assisted CRM",
+      modules: "address-book,assistant",
+    },
+    root
+  )
+  const manifest = await readFile(
+    path.join(result.destination, "src", "client.ts"),
+    "utf8"
+  )
+  const serverModules = await readFile(
+    path.join(result.destination, "server", "modules.go"),
+    "utf8"
+  )
+
+  assert.match(manifest, /assistantModule/)
+  assert.match(serverModules, /assistant\.Module/)
 })
 
 test("rifiuta slug e moduli non validi", async () => {

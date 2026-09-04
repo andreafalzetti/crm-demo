@@ -111,6 +111,12 @@ func writeAudit(app core.App, actor *core.Record, action, collection, recordID s
 	}
 }
 
+// RecordAudit lets trusted server-side modules record mutations that don't pass
+// through PocketBase's public record request hooks.
+func RecordAudit(app core.App, actor *core.Record, action, collection, recordID string, before, after map[string]any) {
+	writeAudit(app, actor, action, collection, recordID, sanitize(before), sanitize(after))
+}
+
 func sanitize(values map[string]any) map[string]any {
 	if values == nil {
 		return nil

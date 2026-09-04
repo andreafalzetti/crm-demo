@@ -6,6 +6,8 @@ import (
 	_ "github.com/designferri/crm-demo/modules/address-book/backend/migrations"
 	agenda "github.com/designferri/crm-demo/modules/agenda/backend"
 	_ "github.com/designferri/crm-demo/modules/agenda/backend/migrations"
+	assistant "github.com/designferri/crm-demo/modules/assistant/backend"
+	_ "github.com/designferri/crm-demo/modules/assistant/backend/migrations"
 	personnel "github.com/designferri/crm-demo/modules/personnel/backend"
 	_ "github.com/designferri/crm-demo/modules/personnel/backend/migrations"
 	quotes "github.com/designferri/crm-demo/modules/quotes/backend"
@@ -21,5 +23,6 @@ func crmModules() []platform.Module {
 		workitems.Module{},
 		agenda.Module{},
 		quotes.Module{IssuerName: "Ferri & Co.", AccentHex: "#087f48"},
+		assistant.Module{},
 	}
 }

@@ -45,9 +45,19 @@ const MODULE_CATALOG = {
     goPath: "quotes",
     dependencies: ["address-book", "work-items"],
   },
+  assistant: {
+    package: "@crm/assistant",
+    symbol: "assistantModule",
+    goAlias: "assistant",
+    goPath: "assistant",
+    dependencies: [],
+    optIn: true,
+  },
 }
 const AVAILABLE_MODULES = new Set(Object.keys(MODULE_CATALOG))
-const DEFAULT_MODULES = Object.keys(MODULE_CATALOG)
+const DEFAULT_MODULES = Object.keys(MODULE_CATALOG).filter(
+  (module) => !MODULE_CATALOG[module].optIn
+)
 
 export function parseArgs(argv) {
   const values = {}
@@ -113,7 +123,9 @@ function validate(options) {
       throw new Error(`Il modulo ${module} richiede: ${missing.join(", ")}`)
     }
   }
-  const modules = DEFAULT_MODULES.filter((module) => requested.has(module))
+  const modules = Object.keys(MODULE_CATALOG).filter((module) =>
+    requested.has(module)
+  )
 
   return {
     slug,
@@ -233,7 +245,7 @@ export async function createCrm(
   return { destination, ...options }
 }
 
-export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--modules address-book,personnel,work-items,agenda,quotes]`
+export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--modules address-book,personnel,work-items,agenda,quotes,assistant]`
 
 if (
   process.argv[1] &&
