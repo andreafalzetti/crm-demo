@@ -1,0 +1,1 @@
+export { addressBookModule } from "./module"

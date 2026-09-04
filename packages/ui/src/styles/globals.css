@@ -1,0 +1,132 @@
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource-variable/newsreader";
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@source "../../../../apps/**/*.{ts,tsx}";
+@source "../../../../packages/**/*.{ts,tsx}";
+@source "../../../../modules/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.972 0.012 83);
+  --foreground: oklch(0.205 0.018 67);
+  --card: oklch(0.995 0.006 83);
+  --card-foreground: oklch(0.205 0.018 67);
+  --popover: oklch(0.995 0.006 83);
+  --popover-foreground: oklch(0.205 0.018 67);
+  --primary: oklch(0.49 0.13 154);
+  --primary-foreground: oklch(0.985 0.005 85);
+  --secondary: oklch(0.925 0.018 79);
+  --secondary-foreground: oklch(0.26 0.02 67);
+  --muted: oklch(0.94 0.012 78);
+  --muted-foreground: oklch(0.52 0.018 67);
+  --accent: oklch(0.9 0.035 79);
+  --accent-foreground: oklch(0.25 0.02 67);
+  --destructive: oklch(0.56 0.2 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.86 0.018 76);
+  --input: oklch(0.86 0.018 76);
+  --ring: oklch(0.49 0.13 154);
+  --radius: 0.65rem;
+  --sidebar: oklch(0.235 0.018 68);
+  --sidebar-foreground: oklch(0.93 0.014 80);
+  --sidebar-muted: oklch(0.31 0.018 68);
+  --sidebar-accent: oklch(0.72 0.13 153);
+}
+
+.dark {
+  --background: oklch(0.17 0.014 67);
+  --foreground: oklch(0.94 0.012 82);
+  --card: oklch(0.205 0.014 67);
+  --card-foreground: oklch(0.94 0.012 82);
+  --popover: oklch(0.205 0.014 67);
+  --popover-foreground: oklch(0.94 0.012 82);
+  --primary: oklch(0.72 0.13 153);
+  --primary-foreground: oklch(0.16 0.02 67);
+  --secondary: oklch(0.27 0.016 67);
+  --secondary-foreground: oklch(0.93 0.012 82);
+  --muted: oklch(0.25 0.014 67);
+  --muted-foreground: oklch(0.68 0.018 75);
+  --accent: oklch(0.29 0.025 76);
+  --accent-foreground: oklch(0.94 0.012 82);
+  --destructive: oklch(0.65 0.2 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.72 0.13 153);
+  --sidebar: oklch(0.135 0.012 67);
+  --sidebar-foreground: oklch(0.93 0.014 80);
+  --sidebar-muted: oklch(0.22 0.016 67);
+  --sidebar-accent: oklch(0.72 0.13 153);
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans Variable", sans-serif;
+  --font-serif: "Newsreader Variable", serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground min-w-80 antialiased;
+    font-family: "IBM Plex Sans Variable", sans-serif;
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--foreground) 3%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 3%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+}
+
+@utility font-editorial {
+  font-family: "Newsreader Variable", serif;
+  font-variation-settings: "opsz" 48;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility surface-shadow {
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--foreground) 6%, transparent), 0 16px 42px -28px color-mix(in oklch, var(--foreground) 45%, transparent);
+}

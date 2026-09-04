@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@workspace/ui/*": ["../../packages/ui/src/*"],
+      "@crm/app-core": ["../../packages/app-core/src/index.ts"],
+      "@crm/address-book": ["../../modules/address-book/web/src/index.ts"],
+      "@crm/personnel": ["../../modules/personnel/web/src/index.ts"],
+      "@crm/work-items": ["../../modules/work-items/web/src/index.ts"],
+      "@crm/agenda": ["../../modules/agenda/web/src/index.ts"],
+      "@crm/quotes": ["../../modules/quotes/web/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}
