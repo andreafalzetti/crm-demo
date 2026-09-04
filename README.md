@@ -137,3 +137,29 @@ Hetzner dedicata a Docker Compose, n8n e alle demo CRM. Account Hetzner,
 tailnet Tailscale e state backend sono intenzionalmente separati
 dall'infrastruttura OFC. Consulta [`terraform/README.md`](terraform/README.md)
 prima di inizializzare o applicare il modulo.
+
+### Deploy privato della demo
+
+Il deploy privato costruisce il frontend e il server PocketBase in una singola
+immagine, applica le migrazioni, crea l'utente demo in modo idempotente e carica
+lo scenario dimostrativo. PocketBase resta dietro un gateway locale e la console
+`/_/` non viene inoltrata. Il servizio è esposto in HTTPS soltanto tramite
+Tailscale Serve.
+
+```bash
+make deploy-private
+```
+
+I secret vengono letti dal profilo AWS personale `andrea` e trasmessi alla VPS
+via SSH; non sono salvati nel repository o negli argomenti dei processi. Per
+leggere la password dell'utente `demo@designferri.local` nel proprio terminale:
+
+```bash
+aws ssm get-parameter \
+  --profile andrea \
+  --region eu-central-1 \
+  --name /crm-demo/production/demo/app-user/password \
+  --with-decryption \
+  --query Parameter.Value \
+  --output text
+```

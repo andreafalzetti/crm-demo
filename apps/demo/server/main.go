@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	_ "github.com/designferri/crm-demo/internal/migrations"
 	"github.com/designferri/crm-demo/internal/platform"
@@ -17,6 +19,7 @@ func main() {
 	app := pocketbase.New()
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{Automigrate: false})
 	platform.Register(app, crmModules()...)
+	registerStaticAssets(app)
 	registerUserCommand(app)
 	registerDemoSeedCommand(app)
 
@@ -27,16 +30,55 @@ func main() {
 
 func registerUserCommand(app *pocketbase.PocketBase) {
 	userCommand := &cobra.Command{Use: "app-user", Short: "Gestisce gli utenti applicativi CRM"}
+	var passwordStdin bool
+	var ifNotExists bool
 	createCommand := &cobra.Command{
-		Use:          "create EMAIL PASSWORD",
+		Use:          "create EMAIL [PASSWORD]",
 		Short:        "Crea il primo utente applicativo",
-		Args:         cobra.ExactArgs(2),
 		SilenceUsage: true,
+		Args: func(command *cobra.Command, args []string) error {
+			if len(args) < 1 || len(args) > 2 {
+				return errors.New("specifica EMAIL e la password come argomento oppure con --password-stdin")
+			}
+			if passwordStdin && len(args) == 2 {
+				return errors.New("non specificare PASSWORD insieme a --password-stdin")
+			}
+			if !passwordStdin && len(args) != 2 {
+				return errors.New("PASSWORD mancante: usa l'argomento o --password-stdin")
+			}
+			return nil
+		},
 		RunE: func(command *cobra.Command, args []string) error {
 			name, _ := command.Flags().GetString("name")
 			roleKey, _ := command.Flags().GetString("role")
 			if name == "" {
 				return errors.New("il nome è obbligatorio")
+			}
+			if ifNotExists {
+				if _, err := app.FindAuthRecordByEmail("users", args[0]); err == nil {
+					fmt.Printf("Utente %s già presente; nessuna modifica.\n", args[0])
+					return nil
+				}
+			}
+			password := ""
+			if passwordStdin {
+				scanner := bufio.NewScanner(command.InOrStdin())
+				scanner.Buffer(make([]byte, 1024), 4096)
+				if !scanner.Scan() {
+					if err := scanner.Err(); err != nil {
+						return fmt.Errorf("lettura password da stdin: %w", err)
+					}
+					return errors.New("password vuota su stdin")
+				}
+				password = scanner.Text()
+				if scanner.Scan() {
+					return errors.New("la password su stdin deve essere una singola riga")
+				}
+			} else {
+				password = args[1]
+			}
+			if strings.TrimSpace(password) == "" {
+				return errors.New("la password non può essere vuota")
 			}
 			role, err := app.FindFirstRecordByData("roles", "key", roleKey)
 			if err != nil {
@@ -48,7 +90,7 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 			}
 			user := core.NewRecord(collection)
 			user.SetEmail(args[0])
-			user.SetPassword(args[1])
+			user.SetPassword(password)
 			user.SetVerified(true)
 			user.Set("name", name)
 			user.Set("active", true)
@@ -63,6 +105,8 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 	}
 	createCommand.Flags().String("name", "", "Nome visualizzato")
 	createCommand.Flags().String("role", "administrator", "Chiave del ruolo")
+	createCommand.Flags().BoolVar(&passwordStdin, "password-stdin", false, "Legge la password da una singola riga su stdin")
+	createCommand.Flags().BoolVar(&ifNotExists, "if-not-exists", false, "Non modifica l'utente se esiste già")
 	userCommand.AddCommand(createCommand)
 	app.RootCmd.AddCommand(userCommand)
 }

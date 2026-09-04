@@ -1,0 +1,22 @@
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	encode zstd gzip
+
+	@pocketbaseAdmin path /_/ /_/*
+	respond @pocketbaseAdmin 404
+
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	reverse_proxy crm-demo:8090 {
+		header_up X-Forwarded-Proto https
+	}
+}

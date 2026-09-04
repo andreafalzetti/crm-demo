@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.vscode
+**/.turbo
+**/node_modules
+**/dist
+**/pb_data
+**/test-results
+**/playwright-report
+terraform
+*.log
+*.tfplan
+*.tfstate*
+.env*

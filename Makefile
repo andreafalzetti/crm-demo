@@ -5,7 +5,10 @@ TF_VARS_FILE ?= config/$(TF_ENV)/terraform.tfvars
 TF_PLAN_FILE ?= plan.out
 TF_HCLOUD := ./scripts/terraform-hcloud.sh
 
-.PHONY: tf-init tf-fmt tf-fmt-check tf-validate tf-test tf-plan tf-apply tf-output
+.PHONY: deploy-private tf-init tf-fmt tf-fmt-check tf-validate tf-test tf-plan tf-apply tf-output
+
+deploy-private:
+	./scripts/deploy-private.sh
 
 tf-init:
 	@test -f "$(TF_DIR)/$(TF_BACKEND_FILE)" || { echo "Missing $(TF_DIR)/$(TF_BACKEND_FILE); copy the .example file first." >&2; exit 1; }
