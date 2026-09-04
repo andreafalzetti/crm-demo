@@ -99,6 +99,7 @@ func (config runtimeConfig) handleChat(e *core.RequestEvent) error {
 		return e.InternalServerError("Risposta assistente non valida.", err)
 	}
 	result.Confirmations = canonicalConfirmations(e.App, e.Auth, result.Confirmations)
+	result.Links = canonicalLinks(result.Links)
 	return e.JSON(http.StatusOK, result)
 }
 
@@ -153,6 +154,31 @@ func canonicalConfirmations(app core.App, actor *core.Record, requested []confir
 			Summary: record.GetString("summary"),
 			Status:  record.GetString("status"),
 		})
+	}
+	return result
+}
+
+func canonicalLinks(requested []recordLink) []recordLink {
+	allowedRoots := []string{
+		"/organizations",
+		"/work-items",
+		"/agenda",
+		"/quotes",
+		"/personnel",
+	}
+	result := make([]recordLink, 0, len(requested))
+	for _, item := range requested {
+		item.Label = truncate(strings.TrimSpace(item.Label), 100)
+		item.To = strings.TrimSpace(item.To)
+		if item.Label == "" || strings.Contains(item.To, "//") {
+			continue
+		}
+		for _, root := range allowedRoots {
+			if item.To == root || strings.HasPrefix(item.To, root+"/") {
+				result = append(result, item)
+				break
+			}
+		}
 	}
 	return result
 }
