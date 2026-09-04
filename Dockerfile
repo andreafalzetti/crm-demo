@@ -11,6 +11,7 @@ COPY packages/ui/package.json packages/ui/package.json
 COPY modules/address-book/web/package.json modules/address-book/web/package.json
 COPY modules/agenda/web/package.json modules/agenda/web/package.json
 COPY modules/appointments/web/package.json modules/appointments/web/package.json
+COPY modules/assistant/web/package.json modules/assistant/web/package.json
 COPY modules/payments/web/package.json modules/payments/web/package.json
 COPY modules/personnel/web/package.json modules/personnel/web/package.json
 COPY modules/quotes/web/package.json modules/quotes/web/package.json
