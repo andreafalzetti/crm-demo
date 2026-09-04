@@ -15,6 +15,11 @@ export function SidebarNavigation({
   adminNavigation: NavItem[]
   onNavigate: () => void
 }) {
+  const previewModules = manifest.modules.filter(
+    (module) => module.status === "preview"
+  ).length
+  const activeModules = manifest.modules.length - previewModules
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-20 items-center border-b border-white/10 px-5">
@@ -28,9 +33,16 @@ export function SidebarNavigation({
         />
         {navigationGroups.map((group) => (
           <section key={group.id}>
-            <p className="mt-7 mb-2 px-3 text-[10px] font-semibold tracking-[0.2em] text-stone-500 uppercase">
-              {group.label}
-            </p>
+            <div className="mt-7 mb-2 flex items-center justify-between gap-2 px-3">
+              <p className="text-[10px] font-semibold tracking-[0.2em] text-stone-500 uppercase">
+                {group.label}
+              </p>
+              {group.status === "preview" && (
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.14em] text-emerald-200 uppercase">
+                  Mock
+                </span>
+              )}
+            </div>
             {group.items.map((item) => (
               <SidebarLink key={item.to} item={item} onNavigate={onNavigate} />
             ))}
@@ -54,8 +66,8 @@ export function SidebarNavigation({
             CRM modulare
           </div>
           <p className="mt-1.5 text-[11px] leading-4 text-stone-500">
-            PocketBase · {manifest.modules.length}{" "}
-            {manifest.modules.length === 1 ? "modulo attivo" : "moduli attivi"}
+            PocketBase · {activeModules} attivi
+            {previewModules > 0 ? ` · ${previewModules} mock` : ""}
           </p>
         </div>
       </div>

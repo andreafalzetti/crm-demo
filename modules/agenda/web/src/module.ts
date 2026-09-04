@@ -13,6 +13,7 @@ export const agendaModule: CrmModule = {
     { id: "address-book" },
     { id: "personnel" },
     { id: "work-items" },
+    { id: "appointments", optional: true },
   ],
   permissions: [
     "agenda.entries.read",

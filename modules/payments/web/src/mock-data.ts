@@ -1,0 +1,81 @@
+import type { PaymentChannel, PaymentPreview } from "./types"
+
+export const payments: PaymentPreview[] = [
+  {
+    id: "PAY-2084",
+    createdAt: "Oggi · 08:42",
+    customer: "Elena Martini",
+    appointment: "Prima visita · 09:00",
+    amount: 120,
+    method: "online",
+    status: "paid",
+    provider: "Mollie",
+  },
+  {
+    id: "PAY-2081",
+    createdAt: "Ieri · 17:35",
+    customer: "Anna Bellini",
+    appointment: "Teleconsulto · oggi 11:30",
+    amount: 60,
+    method: "online",
+    status: "paid",
+    provider: "Mollie",
+  },
+  {
+    id: "PAY-2079",
+    createdAt: "Ieri · 16:10",
+    customer: "Roberto Serra",
+    appointment: "Visita di controllo · ieri 16:00",
+    amount: 75,
+    method: "pos",
+    status: "paid",
+    provider: "Terminale studio",
+  },
+  {
+    id: "PAY-2075",
+    createdAt: "2 set · 12:08",
+    customer: "Chiara Sala",
+    appointment: "Prima visita · 2 set 11:00",
+    amount: 120,
+    method: "cash",
+    status: "paid",
+    provider: "Cassa manuale",
+  },
+  {
+    id: "PAY-2072",
+    createdAt: "1 set · 09:14",
+    customer: "Davide Villa",
+    appointment: "Teleconsulto · annullato",
+    amount: 60,
+    method: "online",
+    status: "refunded",
+    provider: "Mollie",
+  },
+]
+
+export const paymentChannels: PaymentChannel[] = [
+  {
+    id: "mollie-online",
+    name: "Mollie Online",
+    description: "Link di pagamento, carte e metodi locali alla prenotazione.",
+    mode: "online",
+    status: "available",
+    detail: "OAuth per ogni studio · webhook firmati",
+  },
+  {
+    id: "mollie-terminal",
+    name: "Mollie Terminal",
+    description: "Pagamento fisico collegato all’appuntamento dalla reception.",
+    mode: "physical",
+    status: "planned",
+    detail: "Terminale e riconciliazione automatica",
+  },
+  {
+    id: "manual-register",
+    name: "Cassa manuale",
+    description: "Contanti, bonifico o POS esterno registrati dall’operatore.",
+    mode: "manual",
+    status: "enabled",
+    detail: "Disponibile anche senza provider online",
+  },
+]

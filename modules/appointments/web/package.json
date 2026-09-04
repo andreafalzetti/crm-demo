@@ -1,0 +1,30 @@
+{
+  "name": "@crm/appointments",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --config ../../../eslint.config.js",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@crm/app-core": "workspace:*",
+    "@workspace/ui": "workspace:*",
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^10",
+    "typescript": "~6",
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,0 +1,1 @@
+export { paymentsModule } from "./module"

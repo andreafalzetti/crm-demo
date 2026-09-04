@@ -25,7 +25,12 @@ export function AppShell({ manifest }: { manifest: ClientManifest }) {
     (groups, module) => {
       const items = module.navigation.filter((item) => can(item.permission))
       if (items.length)
-        groups.push({ id: module.id, label: module.label, items })
+        groups.push({
+          id: module.id,
+          label: module.label,
+          status: module.status,
+          items,
+        })
       return groups
     },
     []

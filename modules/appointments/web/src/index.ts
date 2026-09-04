@@ -1,0 +1,1 @@
+export { appointmentsModule } from "./module"

@@ -13,6 +13,7 @@ export type NavItem = {
 export type CrmModule = {
   id: string
   label: string
+  status?: "active" | "preview"
   navigation: NavItem[]
   routes: RouteObject[]
   permissions: string[]
@@ -38,6 +39,7 @@ export type CustomerDetailContribution = {
 export type NavigationGroup = {
   id: string
   label: string
+  status?: "active" | "preview"
   items: NavItem[]
 }
 

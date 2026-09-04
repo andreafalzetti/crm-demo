@@ -1,6 +1,6 @@
 # CRM Kit
 
-Scaffold modulare per realizzare piccoli CRM verticali, uno per cliente, con PocketBase come backend e React + shadcn/ui come frontend. Il repository include un'app dimostrativa italiana con cinque moduli componibili.
+Scaffold modulare per realizzare piccoli CRM verticali, uno per cliente, con PocketBase come backend e React + shadcn/ui come frontend. Il repository include un'app dimostrativa italiana con cinque moduli funzionanti e due anteprime concettuali.
 
 ## Cosa include
 
@@ -11,6 +11,8 @@ Scaffold modulare per realizzare piccoli CRM verticali, uno per cliente, con Poc
 - incarichi/interventi assegnabili e collegati ai clienti;
 - agenda settimanale che compone appuntamenti, interventi e disponibilità;
 - preventivi a righe con calcolo importi e PDF archiviato nello storage protetto;
+- mock del verticale medico con tipi di appuntamento, disponibilità e regole di distribuzione;
+- mock del modulo pagamenti, collegabile agli appuntamenti e predisposto per canali online e fisici;
 - audit trail per le modifiche alle collezioni operative e amministrative;
 - UI responsive, tema chiaro/scuro e design system condiviso basato su shadcn/ui;
 - migrazioni Go versionate e hook backend per le regole non esprimibili nel solo schema;
@@ -92,12 +94,16 @@ modules/personnel/             personale, presenze, ferie e assenze
 modules/work-items/            incarichi/interventi e assegnazioni
 modules/agenda/                calendario operativo condiviso
 modules/quotes/                preventivi, righe e generatore PDF
+modules/appointments/web/      anteprima UX per prenotazioni e distribuzione
+modules/payments/web/          anteprima UX per incassi online e fisici
 internal/platform/            runtime comune, autorizzazione e audit
 internal/migrations/          schema e seed del nucleo CRM
 tools/create-crm.mjs          generatore di nuove istanze
 ```
 
 Ogni istanza possiede un `client.ts` che compone i moduli e definisce nome, sigla e colore. Un modulo frontend può contribuire navigazione, route, widget di panoramica e tab nella scheda cliente. La controparte Go espone permessi e hook; le migrazioni definiscono lo schema PocketBase. `server/modules.go` è il registro backend corrispondente e viene generato insieme al manifest React.
+
+`appointments` e `payments` sono marcati `preview`: compaiono nella demo con dati mock ma non vengono ancora aggiunti dal generatore, non registrano permessi backend e non persistono dati. La decisione di prodotto e il modello concettuale del verticale medico sono descritti in [`docs/verticals/medical-practice.md`](docs/verticals/medical-practice.md).
 
 La visibilità dei comandi nella UI migliora l'esperienza, ma non è un confine di sicurezza. Ogni lettura e mutazione viene autorizzata dalle API rules PocketBase; gli hook Go applicano inoltre proprietà come autore/uploader e protezioni sugli account di sistema.
 

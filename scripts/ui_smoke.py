@@ -50,9 +50,14 @@ def main() -> None:
             "Contatti",
             "Collaboratori",
             "Presenze",
+            "Appuntamenti",
+            "Tipi di visita",
+            "Disponibilità e regole",
             "Interventi",
             "Agenda condivisa",
             "Preventivi PDF",
+            "Movimenti",
+            "Canali e regole",
         ]
         for label in expected_links:
             expect(navigation.get_by_role("link", name=label, exact=True)).to_be_visible()
@@ -75,6 +80,52 @@ def main() -> None:
         expect(page.get_by_role("heading", name="Agenda", exact=True)).to_be_visible()
         expect(page.get_by_text("Allineamento operativo", exact=True)).to_be_visible()
         page.screenshot(path="/tmp/crm-modular-agenda.png", full_page=True)
+
+        navigation.get_by_role("link", name="Appuntamenti", exact=True).click()
+        expect(
+            page.get_by_role("heading", name="Appuntamenti", exact=True)
+        ).to_be_visible()
+        expect(
+            page.get_by_role("heading", name="Prossimi appuntamenti", exact=True)
+        ).to_be_visible()
+        expect(page.get_by_text("Da incassare · € 75", exact=True)).to_be_visible()
+        page.screenshot(path="/tmp/crm-medical-appointments.png", full_page=True)
+
+        navigation.get_by_role("link", name="Tipi di visita", exact=True).click()
+        expect(
+            page.get_by_role("heading", name="Tipi di appuntamento", exact=True)
+        ).to_be_visible()
+        page.get_by_role("button", name=re.compile("Teleconsulto")).click()
+        page.get_by_role("tab", name="Pagamento").click()
+        expect(
+            page.get_by_text("Modulo Pagamenti collegato", exact=True)
+        ).to_be_visible()
+        page.evaluate("window.scrollTo(0, 0)")
+        page.screenshot(path="/tmp/crm-medical-appointment-types.png", full_page=True)
+
+        navigation.get_by_role(
+            "link", name="Disponibilità e regole", exact=True
+        ).click()
+        expect(
+            page.get_by_role("heading", name="Regole di prenotazione", exact=True)
+        ).to_be_visible()
+        page.get_by_role("button", name="Simula assegnazione", exact=True).click()
+        expect(page.get_by_text("Routing trace · simulazione 2", exact=True)).to_be_visible()
+        page.evaluate("window.scrollTo(0, 0)")
+        page.screenshot(path="/tmp/crm-medical-routing.png", full_page=True)
+
+        navigation.get_by_role("link", name="Movimenti", exact=True).click()
+        expect(page.get_by_role("heading", name="Pagamenti", exact=True)).to_be_visible()
+        expect(
+            page.get_by_role("heading", name="Ultimi movimenti", exact=True)
+        ).to_be_visible()
+        navigation.get_by_role("link", name="Canali e regole", exact=True).click()
+        expect(
+            page.get_by_role("heading", name="Configurazione pagamenti", exact=True)
+        ).to_be_visible()
+        expect(page.get_by_text("Mollie Online", exact=True)).to_be_visible()
+        page.evaluate("window.scrollTo(0, 0)")
+        page.screenshot(path="/tmp/crm-medical-payments.png", full_page=True)
 
         navigation.get_by_role("link", name="Clienti", exact=True).click()
         page.get_by_role("link", name="Officine Aurora", exact=True).click()
@@ -101,7 +152,7 @@ def main() -> None:
         expect(page.get_by_text("PDF generato e archiviato", exact=True)).to_be_visible()
         page.screenshot(path="/tmp/crm-modular-quotes.png", full_page=True)
 
-        print("dashboard: 5 moduli verificati")
+        print("dashboard: 5 moduli operativi e 2 mock verificati")
         print("customer: interventi e preventivi collegati")
         print("pdf:", download.suggested_filename)
 
@@ -114,9 +165,12 @@ def main() -> None:
         expect(mobile.get_by_role("heading", name=re.compile("Buon lavoro"))).to_be_visible()
         mobile.get_by_role("button", name="Apri menu").click()
         menu = mobile.get_by_role("dialog")
+        expect(menu.get_by_role("link", name="Appuntamenti", exact=True)).to_be_visible()
         expect(menu.get_by_role("link", name="Preventivi PDF", exact=True)).to_be_visible()
-        menu.get_by_role("link", name="Preventivi PDF", exact=True).click()
-        expect(mobile.get_by_role("heading", name="Preventivi", exact=True)).to_be_visible()
+        menu.get_by_role("link", name="Appuntamenti", exact=True).click()
+        expect(
+            mobile.get_by_role("heading", name="Appuntamenti", exact=True)
+        ).to_be_visible()
         mobile.screenshot(path="/tmp/crm-modular-mobile.png", full_page=True)
         overflow = mobile.evaluate(
             "document.documentElement.scrollWidth - document.documentElement.clientWidth"
