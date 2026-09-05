@@ -45,6 +45,8 @@ func (config runtimeConfig) handleTool(e *core.RequestEvent) error {
 		result, err = workItems(e.App, actor, input.Args)
 	case "quotes":
 		result, err = quotes(e.App, actor, input.Args)
+	case "records":
+		result, err = findAssistantRecords(e.App, actor, input.Args)
 	case "prepare_action":
 		result, err = prepareAction(e.App, actor, claims.SessionID, input.Args)
 	default:
@@ -347,6 +349,8 @@ func prepareAction(app core.App, actor *core.Record, sessionID string, args map[
 
 func validateAction(app core.App, actor *core.Record, action string, payload map[string]any) (string, error) {
 	switch action {
+	case "create_record", "update_record":
+		return validateRecordAction(app, actor, action, payload)
 	case "create_note":
 		if err := requirePermission(app, actor, "addressbook.notes.create"); err != nil {
 			return "", err

@@ -70,6 +70,8 @@ func (config runtimeConfig) handleCancel(e *core.RequestEvent) error {
 
 func applyAction(app core.App, actor *core.Record, action string, payload map[string]any) (map[string]any, error) {
 	switch action {
+	case "create_record", "update_record":
+		return applyRecordAction(app, actor, action, payload)
 	case "create_note":
 		return createRecord(app, actor, "notes", map[string]any{
 			"organization": argString(payload, "customerId"),

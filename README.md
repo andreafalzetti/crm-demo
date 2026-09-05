@@ -117,7 +117,10 @@ riusa i permessi RBAC correnti.
 Le azioni di scrittura non modificano subito i dati: creano un record
 `assistant_actions` con scadenza. Soltanto il pulsante **Conferma** nella UI può
 eseguire la proposta; conferma, modifica finale e target vengono registrati
-nell'audit trail. La rete Docker `crm-assistant` collega i soli container
+nell'audit trail. L'assistente può creare e aggiornare clienti, contatti, note,
+attività, interventi, agenda, personale, presenze/ferie e preventivi usando una
+allow-list di campi per ogni entità; non espone alcuna operazione di eliminazione.
+La rete Docker `crm-assistant` collega i soli container
 applicativi senza esporre PocketBase, n8n o PostgreSQL su nuove porte.
 
 Variabili runtime richieste:
