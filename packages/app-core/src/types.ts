@@ -55,8 +55,13 @@ export type ClientManifest = {
   name: string
   shortName: string
   locale: "it-IT"
+  timeZone: string
   accent: string
   modules: CrmModule[]
+}
+
+export type ClientManifestInput = Omit<ClientManifest, "timeZone"> & {
+  timeZone?: string
 }
 
 export type UserRecord = RecordModel & {

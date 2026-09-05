@@ -15,9 +15,21 @@ import (
 
 var sessionIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{8,100}$`)
 
+const (
+	defaultTimeZone                   = "Europe/Rome"
+	defaultAppointmentDurationMinutes = 30
+)
+
 type chatRequest struct {
 	Message   string `json:"message"`
 	SessionID string `json:"sessionId"`
+	TimeZone  string `json:"timeZone"`
+}
+
+type assistantContext struct {
+	TimeZone                  string `json:"timeZone"`
+	CurrentDateTime           string `json:"currentDateTime"`
+	DefaultAppointmentMinutes int    `json:"defaultAppointmentMinutes"`
 }
 
 type confirmationView struct {
@@ -53,6 +65,10 @@ func (config runtimeConfig) handleChat(e *core.RequestEvent) error {
 	if !sessionIDPattern.MatchString(input.SessionID) {
 		return e.BadRequestError("Sessione non valida.", nil)
 	}
+	context, err := resolveAssistantContext(input.TimeZone, time.Now())
+	if err != nil {
+		return e.BadRequestError("Timezone del gestionale non valida.", err)
+	}
 
 	token, err := signDelegation(config.sharedSecret, delegationClaims{
 		UserID:    e.Auth.Id,
@@ -66,6 +82,7 @@ func (config runtimeConfig) handleChat(e *core.RequestEvent) error {
 		"chatInput":       input.Message,
 		"sessionId":       input.SessionID,
 		"delegationToken": token,
+		"context":         context,
 		"user": map[string]string{
 			"id":   e.Auth.Id,
 			"name": e.Auth.GetString("name"),
@@ -101,6 +118,22 @@ func (config runtimeConfig) handleChat(e *core.RequestEvent) error {
 	result.Confirmations = canonicalConfirmations(e.App, e.Auth, result.Confirmations)
 	result.Links = canonicalLinks(result.Links)
 	return e.JSON(http.StatusOK, result)
+}
+
+func resolveAssistantContext(timeZone string, now time.Time) (assistantContext, error) {
+	timeZone = strings.TrimSpace(timeZone)
+	if timeZone == "" {
+		timeZone = defaultTimeZone
+	}
+	location, err := time.LoadLocation(timeZone)
+	if err != nil {
+		return assistantContext{}, err
+	}
+	return assistantContext{
+		TimeZone:                  timeZone,
+		CurrentDateTime:           now.In(location).Format(time.RFC3339),
+		DefaultAppointmentMinutes: defaultAppointmentDurationMinutes,
+	}, nil
 }
 
 func normalizeChatResponse(body []byte) (chatResponse, error) {

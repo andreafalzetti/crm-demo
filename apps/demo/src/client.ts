@@ -13,6 +13,7 @@ export const clientManifest = defineClientManifest({
   name: "Ferri & Co.",
   shortName: "FC",
   locale: "it-IT",
+  timeZone: "Europe/Rome",
   accent: "#087f48",
   modules: [
     addressBookModule,

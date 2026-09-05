@@ -91,6 +91,7 @@ function validate(options) {
   const slug = options.slug?.trim()
   const name = options.name?.trim()
   const accent = options.accent?.trim() || "#087f48"
+  const timeZone = options.timezone?.trim() || "Europe/Rome"
   const requestedModules = (options.modules || DEFAULT_MODULES.join(","))
     .split(",")
     .map((item) => item.trim())
@@ -106,6 +107,11 @@ function validate(options) {
     throw new Error(
       "--accent deve essere un colore esadecimale, per esempio #087f48"
     )
+  try {
+    new Intl.DateTimeFormat("it-IT", { timeZone }).format()
+  } catch {
+    throw new Error(`--timezone non valida: ${timeZone}`)
+  }
   if (
     requestedModules.length === 0 ||
     requestedModules.some((module) => !AVAILABLE_MODULES.has(module))
@@ -131,6 +137,7 @@ function validate(options) {
     slug,
     name,
     accent,
+    timeZone,
     modules,
     shortName: options["short-name"]?.trim() || initials(name),
   }
@@ -148,7 +155,7 @@ function clientManifest(options) {
   })
   const symbols = options.modules.map((module) => MODULE_CATALOG[module].symbol)
 
-  return `${imports.join("\n")}\nimport { defineClientManifest } from "@crm/app-core"\n\nexport const clientManifest = defineClientManifest({\n  slug: ${JSON.stringify(options.slug)},\n  name: ${JSON.stringify(options.name)},\n  shortName: ${JSON.stringify(options.shortName)},\n  locale: "it-IT",\n  accent: ${JSON.stringify(options.accent)},\n  modules: [${symbols.join(", ")}],\n})\n`
+  return `${imports.join("\n")}\nimport { defineClientManifest } from "@crm/app-core"\n\nexport const clientManifest = defineClientManifest({\n  slug: ${JSON.stringify(options.slug)},\n  name: ${JSON.stringify(options.name)},\n  shortName: ${JSON.stringify(options.shortName)},\n  locale: "it-IT",\n  timeZone: ${JSON.stringify(options.timeZone)},\n  accent: ${JSON.stringify(options.accent)},\n  modules: [${symbols.join(", ")}],\n})\n`
 }
 
 function serverModuleRegistry(options) {
@@ -245,7 +252,7 @@ export async function createCrm(
   return { destination, ...options }
 }
 
-export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--modules address-book,personnel,work-items,agenda,quotes,assistant]`
+export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--timezone Europe/Rome] [--modules address-book,personnel,work-items,agenda,quotes,assistant]`
 
 if (
   process.argv[1] &&

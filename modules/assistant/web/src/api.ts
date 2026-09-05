@@ -2,10 +2,14 @@ import { pb } from "@crm/app-core"
 
 import type { AssistantResponse } from "./types"
 
-export function sendMessage(message: string, sessionId: string) {
+export function sendMessage(
+  message: string,
+  sessionId: string,
+  timeZone: string
+) {
   return pb.send<AssistantResponse>("/api/crm/assistant/chat", {
     method: "POST",
-    body: { message, sessionId },
+    body: { message, sessionId, timeZone },
   })
 }
 

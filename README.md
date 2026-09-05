@@ -104,7 +104,14 @@ internal/migrations/          schema e seed del nucleo CRM
 tools/create-crm.mjs          generatore di nuove istanze
 ```
 
-Ogni istanza possiede un `client.ts` che compone i moduli e definisce nome, sigla e colore. Un modulo frontend può contribuire navigazione, route, widget di panoramica, tab nella scheda cliente e pannelli globali della shell. La controparte Go espone permessi e hook; le migrazioni definiscono lo schema PocketBase. `server/modules.go` è il registro backend corrispondente e viene generato insieme al manifest React.
+Ogni istanza possiede un `client.ts` che compone i moduli e definisce nome, sigla,
+colore e timezone IANA. La timezone predefinita è `Europe/Rome`; viene usata per
+mostrare e raggruppare date e orari e viene passata all'assistente per interpretare
+espressioni come “oggi” e “domani”. Un modulo frontend può contribuire navigazione,
+route, widget di panoramica, tab nella scheda cliente e pannelli globali della shell.
+La controparte Go espone permessi e hook; le migrazioni definiscono lo schema
+PocketBase. `server/modules.go` è il registro backend corrispondente e viene
+generato insieme al manifest React.
 
 ### Assistente AI
 

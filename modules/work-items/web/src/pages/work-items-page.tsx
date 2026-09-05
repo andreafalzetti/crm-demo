@@ -10,6 +10,7 @@ import {
   formatDateTime,
   pb,
   useAuth,
+  useClientManifest,
 } from "@crm/app-core"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
@@ -28,6 +29,7 @@ import { workKindLabel } from "../lib/labels"
 import type { OrganizationOption, WorkItem } from "../types"
 
 export function WorkItemsPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -123,7 +125,7 @@ export function WorkItemsPage() {
                     <TableCell>
                       <p className="text-sm">
                         {item.start_at
-                          ? formatDateTime(item.start_at)
+                          ? formatDateTime(item.start_at, manifest.timeZone)
                           : "Da pianificare"}
                       </p>
                       {item.location && (

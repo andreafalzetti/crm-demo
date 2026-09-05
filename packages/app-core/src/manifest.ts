@@ -1,6 +1,16 @@
-import type { ClientManifest } from "./types"
+import type { ClientManifest, ClientManifestInput } from "./types"
 
-export function defineClientManifest(manifest: ClientManifest): ClientManifest {
+export const DEFAULT_TIME_ZONE = "Europe/Rome"
+
+export function defineClientManifest(
+  manifest: ClientManifestInput
+): ClientManifest {
+  const timeZone = manifest.timeZone?.trim() || DEFAULT_TIME_ZONE
+  try {
+    new Intl.DateTimeFormat(manifest.locale, { timeZone }).format()
+  } catch {
+    throw new Error(`Timezone non valida: ${timeZone}`)
+  }
   const moduleIds = new Set<string>()
   const permissions = new Set<string>()
   const paths = new Set<string>()
@@ -39,5 +49,5 @@ export function defineClientManifest(manifest: ClientManifest): ClientManifest {
       }
     }
   }
-  return manifest
+  return { ...manifest, timeZone }
 }

@@ -10,6 +10,7 @@ import {
   formatDateTime,
   pb,
   useAuth,
+  useClientManifest,
 } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -28,6 +29,7 @@ import { EURO_FORMATTER } from "../lib/format"
 import type { OrganizationOption, Quote } from "../types"
 
 export function QuotesPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -96,7 +98,7 @@ export function QuotesPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {quote.generated_at
-                        ? formatDateTime(quote.generated_at)
+                        ? formatDateTime(quote.generated_at, manifest.timeZone)
                         : "Da generare"}
                     </TableCell>
                     <TableCell className="text-right">

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { ArrowRight, CalendarClock, ClipboardList } from "lucide-react"
 import { Link } from "react-router-dom"
 
-import { formatDateTime, pb } from "@crm/app-core"
+import { formatDateTime, pb, useClientManifest } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -15,6 +15,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import type { WorkItem } from "../types"
 
 export function WorkItemsWidget() {
+  const manifest = useClientManifest()
   const items = useQuery({
     queryKey: ["dashboard", "work-items"],
     queryFn: () =>
@@ -74,7 +75,7 @@ export function WorkItemsWidget() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {item.start_at
-                    ? formatDateTime(item.start_at)
+                    ? formatDateTime(item.start_at, manifest.timeZone)
                     : "Da pianificare"}
                 </p>
               </div>

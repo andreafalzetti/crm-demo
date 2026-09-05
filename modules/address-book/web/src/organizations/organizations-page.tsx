@@ -12,6 +12,7 @@ import {
   formatDateTime,
   pb,
   useAuth,
+  useClientManifest,
 } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -31,6 +32,7 @@ import type { Organization } from "../types"
 import { OrganizationDialog } from "./organization-dialog"
 
 export function OrganizationsPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [search, setSearch] = useState("")
@@ -127,7 +129,7 @@ export function OrganizationsPage() {
                     <StatusBadge value={organization.status} />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatDateTime(organization.updated)}
+                    {formatDateTime(organization.updated, manifest.timeZone)}
                   </TableCell>
                   <TableCell>
                     <RowMenu

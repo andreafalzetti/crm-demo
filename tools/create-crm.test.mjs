@@ -90,6 +90,7 @@ test("crea un'app client dal template senza copiare i dati runtime", async () =>
   assert.equal(packageJson.name, "@crm/acme")
   assert.match(manifest, /name: "Acme S\.r\.l\."/)
   assert.match(manifest, /accent: "#123456"/)
+  assert.match(manifest, /timeZone: "Europe\/Rome"/)
   assert.match(manifest, /addressBookModule/)
   assert.match(manifest, /agendaModule/)
   assert.match(manifest, /quotesModule/)
@@ -194,5 +195,16 @@ test("rifiuta slug e moduli non validi", async () => {
   await assert.rejects(
     createCrm({ slug: "acme", name: "Acme", modules: "agenda" }, root),
     /richiede/
+  )
+  await assert.rejects(
+    createCrm(
+      {
+        slug: "acme-timezone",
+        name: "Acme",
+        timezone: "Mars/Olympus",
+      },
+      root
+    ),
+    /--timezone/
   )
 })

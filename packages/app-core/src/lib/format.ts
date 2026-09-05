@@ -1,11 +1,15 @@
-const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("it-IT", {
-  dateStyle: "medium",
-  timeStyle: "short",
-})
+import { DEFAULT_TIME_ZONE } from "../manifest"
 
-export function formatDateTime(value: string) {
+export function formatDateTime(
+  value: string,
+  timeZone: string = DEFAULT_TIME_ZONE
+) {
   if (!value) return "—"
-  return DATE_TIME_FORMATTER.format(new Date(value))
+  return new Intl.DateTimeFormat("it-IT", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone,
+  }).format(new Date(value))
 }
 
 export function initials(name?: string) {

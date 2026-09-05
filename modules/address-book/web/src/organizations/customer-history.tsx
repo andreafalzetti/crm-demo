@@ -1,7 +1,7 @@
 import { Building2, ContactRound, FileText, StickyNote } from "lucide-react"
 import type { RecordModel } from "pocketbase"
 
-import { EmptyState, formatDateTime } from "@crm/app-core"
+import { EmptyState, formatDateTime, useClientManifest } from "@crm/app-core"
 import { Card, CardContent } from "@workspace/ui/components/card"
 
 type HistoryEvent = {
@@ -25,6 +25,7 @@ export function CustomerHistory({
   notes,
   documents,
 }: CustomerHistoryProps) {
+  const manifest = useClientManifest()
   const events: HistoryEvent[] = [
     {
       id: `organization-${organization.id}`,
@@ -84,7 +85,7 @@ export function CustomerHistory({
                   {event.description}
                 </p>
                 <p className="mt-2 text-[11px] tracking-wide text-muted-foreground uppercase">
-                  {formatDateTime(event.created)}
+                  {formatDateTime(event.created, manifest.timeZone)}
                 </p>
               </div>
             )

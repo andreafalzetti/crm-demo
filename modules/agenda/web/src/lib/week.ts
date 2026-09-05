@@ -1,7 +1,4 @@
-const TIME_FORMATTER = new Intl.DateTimeFormat("it-IT", {
-  hour: "2-digit",
-  minute: "2-digit",
-})
+import { DEFAULT_TIME_ZONE } from "@crm/app-core"
 
 export function startOfWeek(value: Date) {
   const result = new Date(value)
@@ -17,12 +14,29 @@ export function addDays(value: Date, amount: number) {
   return result
 }
 
-export function dayKey(value: string | Date) {
+export function dayKey(
+  value: string | Date,
+  timeZone: string = DEFAULT_TIME_ZONE
+) {
   const date = typeof value === "string" ? new Date(value) : value
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return local.toISOString().slice(0, 10)
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date)
+  const valueFor = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? ""
+  return `${valueFor("year")}-${valueFor("month")}-${valueFor("day")}`
 }
 
-export function dateTimeLabel(value: string) {
-  return TIME_FORMATTER.format(new Date(value))
+export function dateTimeLabel(
+  value: string,
+  timeZone: string = DEFAULT_TIME_ZONE
+) {
+  return new Intl.DateTimeFormat("it-IT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(value))
 }

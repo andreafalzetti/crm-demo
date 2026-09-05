@@ -15,12 +15,13 @@ export { PageHeader } from "./components/page-header"
 export { TableLoader } from "./components/table-loader"
 export { formatDateTime } from "./lib/format"
 export { pb } from "./lib/pocketbase"
-export { defineClientManifest } from "./manifest"
+export { DEFAULT_TIME_ZONE, defineClientManifest } from "./manifest"
 export { AppShell } from "./shell/app-shell"
 export { useClientManifest } from "./use-client-manifest"
 export type {
   AuthContextValue,
   ClientManifest,
+  ClientManifestInput,
   CrmModule,
   CustomerDetailContribution,
   DashboardWidget,

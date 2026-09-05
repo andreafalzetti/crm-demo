@@ -3,17 +3,18 @@ import { ArrowUpRight, CalendarDays } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
-import { pb, useAuth } from "@crm/app-core"
+import { pb, useAuth, useClientManifest } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
 
 import { addDays, dayKey } from "../lib/week"
 
 export function AgendaWidget() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const [referenceDate] = useState(() => new Date())
-  const today = dayKey(referenceDate)
-  const tomorrow = dayKey(addDays(referenceDate, 1))
+  const today = dayKey(referenceDate, manifest.timeZone)
+  const tomorrow = dayKey(addDays(referenceDate, 1), manifest.timeZone)
   const entries = useQuery({
     queryKey: ["dashboard", "agenda-today", today],
     queryFn: async () => {

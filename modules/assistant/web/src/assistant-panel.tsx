@@ -9,6 +9,7 @@ import {
   UsersRound,
 } from "lucide-react"
 
+import { useClientManifest } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import {
   Sheet,
@@ -26,21 +27,20 @@ import type { ConversationMessage } from "./types"
 
 const suggestions = [
   {
-    icon: UsersRound,
-    label: "Clienti",
-    prompt:
-      "Cerca il cliente Bianchi e riassumi note, interventi e preventivi.",
+    icon: CalendarDays,
+    label: "Pianifica un appuntamento",
+    prompt: "Segna un appuntamento per Mario Rossi domani alle 9.",
   },
   {
-    icon: CalendarDays,
-    label: "Agenda",
-    prompt:
-      "Quali appuntamenti e interventi sono previsti nei prossimi 7 giorni?",
+    icon: UsersRound,
+    label: "Aggiorna un cliente",
+    prompt: "Trova Officine Aurora e prepara l’aggiornamento del recapito.",
   },
   {
     icon: Sparkles,
-    label: "Disponibilità",
-    prompt: "Chi del personale è disponibile nei prossimi 7 giorni?",
+    label: "Organizza la settimana",
+    prompt:
+      "Riassumi appuntamenti e interventi dei prossimi 7 giorni e segnala conflitti o priorità.",
   },
 ]
 
@@ -49,6 +49,7 @@ function newSessionId() {
 }
 
 export function AssistantPanel() {
+  const manifest = useClientManifest()
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [draft, setDraft] = useState("")
   const sessionId = useRef<string | undefined>(undefined)
@@ -74,7 +75,11 @@ export function AssistantPanel() {
     setError(null)
     setSending(true)
     try {
-      const response = await sendMessage(value, currentSessionId())
+      const response = await sendMessage(
+        value,
+        currentSessionId(),
+        manifest.timeZone
+      )
       setMessages((current) => [
         ...current,
         {
@@ -139,9 +144,13 @@ export function AssistantPanel() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="sm" className="gap-2 shadow-sm" aria-label="Assistente">
+        <Button
+          size="sm"
+          className="gap-2 shadow-sm"
+          aria-label="Assistente CRM"
+        >
           <Sparkles className="size-4" />
-          <span className="hidden md:inline">Assistente</span>
+          <span className="hidden md:inline">Assistente CRM</span>
         </Button>
       </SheetTrigger>
       <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-[500px]">
@@ -149,14 +158,14 @@ export function AssistantPanel() {
           <div className="flex items-start justify-between gap-4 pr-8">
             <div>
               <p className="mb-1 text-[10px] font-semibold tracking-[.2em] text-primary uppercase">
-                Assistente operativo
+                AI per il team
               </p>
               <SheetTitle className="font-editorial text-2xl font-normal tracking-tight">
-                Taccuino di studio
+                Assistente CRM
               </SheetTitle>
               <SheetDescription className="mt-1.5 text-xs leading-5">
-                Legge i dati consentiti dal tuo ruolo. Ogni modifica richiede
-                una tua conferma.
+                Trova informazioni, prepara attività e aggiorna i record. Ogni
+                modifica parte solo dopo la tua conferma.
               </SheetDescription>
             </div>
             {messages.length > 0 ? (
@@ -180,11 +189,11 @@ export function AssistantPanel() {
                 <Bot className="size-5" />
               </div>
               <h2 className="mt-5 font-editorial text-3xl tracking-tight">
-                Da dove iniziamo?
+                Portiamo avanti il lavoro.
               </h2>
               <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                Posso incrociare anagrafiche, personale, interventi, agenda e
-                preventivi della demo.
+                Dimmi cosa vuoi ottenere: cerco i dati, preparo il prossimo
+                passo e ti chiedo solo le conferme necessarie.
               </p>
               <div className="mt-6 grid gap-2">
                 {suggestions.map((suggestion) => {
@@ -227,7 +236,7 @@ export function AssistantPanel() {
                   <span className="grid size-7 place-items-center rounded-full border bg-card text-primary">
                     <LoaderCircle className="size-3.5 animate-spin" />
                   </span>
-                  Sto consultando il CRM…
+                  Sto preparando il prossimo passo…
                 </div>
               ) : null}
             </div>
@@ -257,7 +266,7 @@ export function AssistantPanel() {
                 }
               }}
               maxLength={2000}
-              placeholder="Chiedi o prepara un’operazione…"
+              placeholder="Es. segna un appuntamento domani alle 9…"
               aria-label="Messaggio per l’assistente"
               className="min-h-24 resize-none border-0 bg-transparent pr-14 shadow-none focus-visible:ring-0"
             />
@@ -276,7 +285,8 @@ export function AssistantPanel() {
             </Button>
           </div>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">
-            POC AI · verifica sempre i dati prima di confermare
+            Orari {manifest.timeZone} · le modifiche restano in attesa finché
+            non le confermi
           </p>
         </form>
       </SheetContent>

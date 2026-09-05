@@ -10,6 +10,7 @@ import {
   TableLoader,
   pb,
   useAuth,
+  useClientManifest,
 } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
@@ -44,17 +45,11 @@ type Assignment = RecordModel & {
   staff: string
 }
 
-const DAY_FORMATTER = new Intl.DateTimeFormat("it-IT", {
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-})
-const MONTH_FORMATTER = new Intl.DateTimeFormat("it-IT", {
-  month: "long",
-  year: "numeric",
-})
-
-function leaveEventsForWeek(requests: LeaveSource[], days: Date[]) {
+function leaveEventsForWeek(
+  requests: LeaveSource[],
+  days: Date[],
+  timeZone: string
+) {
   const events: AgendaEvent[] = []
   for (const request of requests) {
     const requestStart = new Date(request.start_date)
@@ -68,7 +63,7 @@ function leaveEventsForWeek(requests: LeaveSource[], days: Date[]) {
       }
       const member = request.expand?.staff as NamedRecord | undefined
       events.push({
-        id: `leave-${request.id}-${dayKey(day)}`,
+        id: `leave-${request.id}-${dayKey(day, timeZone)}`,
         title: `${member?.first_name ?? "Personale"} · assenza`,
         start: day.toISOString(),
         source: "leave",
@@ -81,6 +76,7 @@ function leaveEventsForWeek(requests: LeaveSource[], days: Date[]) {
 }
 
 export function AgendaPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -89,6 +85,25 @@ export function AgendaPage() {
   const days = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDays(cursor, index)),
     [cursor]
+  )
+  const monthFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("it-IT", {
+        month: "long",
+        year: "numeric",
+        timeZone: manifest.timeZone,
+      }),
+    [manifest.timeZone]
+  )
+  const dayFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("it-IT", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        timeZone: manifest.timeZone,
+      }),
+    [manifest.timeZone]
   )
   const start = days[0]
   const end = addDays(days[6], 1)
@@ -170,11 +185,23 @@ export function AgendaPage() {
       )?.staff,
       meta: String(item.expand?.organization?.name ?? item.code),
     }))
-    const leaveEvents = leaveEventsForWeek(leave.data ?? [], days)
+    const leaveEvents = leaveEventsForWeek(
+      leave.data ?? [],
+      days,
+      manifest.timeZone
+    )
     return [...agendaEvents, ...workEvents, ...leaveEvents].filter(
       (event) => staffFilter === "all" || event.staffId === staffFilter
     )
-  }, [assignments.data, days, entries.data, leave.data, staffFilter, work.data])
+  }, [
+    assignments.data,
+    days,
+    entries.data,
+    leave.data,
+    manifest.timeZone,
+    staffFilter,
+    work.data,
+  ])
   const loading = entries.isLoading || work.isLoading || leave.isLoading
 
   return (
@@ -216,7 +243,7 @@ export function AgendaPage() {
             <span className="sr-only">Settimana successiva</span>
           </Button>
           <p className="ml-2 hidden font-editorial text-xl sm:block">
-            {MONTH_FORMATTER.format(cursor)}
+            {monthFormatter.format(cursor)}
           </p>
         </div>
         <Select
@@ -243,11 +270,12 @@ export function AgendaPage() {
           <CardContent className="overflow-x-auto p-0">
             <div className="grid min-w-[980px] grid-cols-7 divide-x">
               {days.map((day) => {
-                const current = dayKey(day)
+                const current = dayKey(day, manifest.timeZone)
                 const dayEvents = events.filter(
-                  (event) => dayKey(event.start) === current
+                  (event) => dayKey(event.start, manifest.timeZone) === current
                 )
-                const isToday = current === dayKey(new Date())
+                const isToday =
+                  current === dayKey(new Date(), manifest.timeZone)
                 return (
                   <section key={current} className="min-h-[430px] bg-card">
                     <header
@@ -258,7 +286,7 @@ export function AgendaPage() {
                       }
                     >
                       <p className="text-xs font-semibold capitalize">
-                        {DAY_FORMATTER.format(day)}
+                        {dayFormatter.format(day)}
                       </p>
                     </header>
                     <div className="space-y-2 p-2">
@@ -279,7 +307,7 @@ export function AgendaPage() {
                           <p className="mt-1 text-[10px] text-muted-foreground">
                             {event.source === "leave"
                               ? event.meta
-                              : `${dateTimeLabel(event.start)} · ${event.meta}`}
+                              : `${dateTimeLabel(event.start, manifest.timeZone)} · ${event.meta}`}
                           </p>
                         </div>
                       ))}

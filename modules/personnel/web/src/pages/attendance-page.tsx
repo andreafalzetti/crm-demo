@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2, Clock3, House, UsersRound } from "lucide-react"
 
-import { EmptyState, PageHeader, TableLoader, pb, useAuth } from "@crm/app-core"
+import {
+  EmptyState,
+  PageHeader,
+  TableLoader,
+  pb,
+  useAuth,
+  useClientManifest,
+} from "@crm/app-core"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -17,9 +24,10 @@ import { dateInputValue, toPocketBaseDate } from "../lib/date"
 import type { AttendanceEntry, StaffMember } from "../types"
 
 export function AttendancePage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
-  const today = dateInputValue(new Date())
+  const today = dateInputValue(new Date(), manifest.timeZone)
   const staff = useQuery({
     queryKey: ["staff"],
     queryFn: () =>
@@ -54,6 +62,7 @@ export function AttendancePage() {
         clock_in: new Date().toLocaleTimeString("it-IT", {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: manifest.timeZone,
         }),
       }
       return existing

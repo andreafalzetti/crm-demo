@@ -12,16 +12,44 @@ const module: CrmModule = {
 
 describe("defineClientManifest", () => {
   it("accetta moduli con identificatori univoci", () => {
+    const manifest = defineClientManifest({
+      slug: "demo",
+      name: "Demo",
+      shortName: "DE",
+      locale: "it-IT",
+      accent: "#087f48",
+      modules: [module],
+    })
+    expect(manifest.modules).toHaveLength(1)
+    expect(manifest.timeZone).toBe("Europe/Rome")
+  })
+
+  it("accetta una timezone IANA configurata", () => {
     expect(
       defineClientManifest({
         slug: "demo",
         name: "Demo",
         shortName: "DE",
         locale: "it-IT",
+        timeZone: "Europe/London",
         accent: "#087f48",
         modules: [module],
-      }).modules
-    ).toHaveLength(1)
+      }).timeZone
+    ).toBe("Europe/London")
+  })
+
+  it("rifiuta una timezone non valida", () => {
+    expect(() =>
+      defineClientManifest({
+        slug: "demo",
+        name: "Demo",
+        shortName: "DE",
+        locale: "it-IT",
+        timeZone: "Mars/Olympus",
+        accent: "#087f48",
+        modules: [module],
+      })
+    ).toThrow("Timezone non valida")
   })
 
   it("rifiuta moduli duplicati", () => {

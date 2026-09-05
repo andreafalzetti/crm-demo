@@ -4,7 +4,7 @@ import { AssistantPanel } from "./assistant-panel"
 
 export const assistantModule: CrmModule = {
   id: "assistant",
-  label: "Assistente",
+  label: "Assistente CRM",
   dependencies: [
     { id: "address-book", optional: true },
     { id: "personnel", optional: true },

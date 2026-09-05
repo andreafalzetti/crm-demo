@@ -2,16 +2,17 @@ import { useQuery } from "@tanstack/react-query"
 import { ArrowUpRight, Palmtree, UsersRound } from "lucide-react"
 import { Link } from "react-router-dom"
 
-import { pb, useAuth } from "@crm/app-core"
+import { pb, useAuth, useClientManifest } from "@crm/app-core"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
 
 import { dateInputValue } from "../lib/date"
 
 export function PersonnelWidget() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const canReadLeave = can("personnel.leave.read")
-  const today = dateInputValue(new Date())
+  const today = dateInputValue(new Date(), manifest.timeZone)
   const staff = useQuery({
     queryKey: ["dashboard", "active-staff"],
     queryFn: async () =>

@@ -227,7 +227,7 @@ export function OrganizationDetailPage() {
                     {String(
                       (note.expand?.author as RecordModel)?.name ?? "Utente"
                     )}{" "}
-                    · {formatDateTime(String(note.created))}
+                    · {formatDateTime(String(note.created), manifest.timeZone)}
                   </p>
                 </CardContent>
               </Card>
@@ -255,7 +255,10 @@ export function OrganizationDetailPage() {
                       {String(document.title)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDateTime(String(document.created))}
+                      {formatDateTime(
+                        String(document.created),
+                        manifest.timeZone
+                      )}
                     </p>
                   </div>
                   <Button

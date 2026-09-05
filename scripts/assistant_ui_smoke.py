@@ -1,6 +1,7 @@
 """Focused headless check for the authenticated CRM assistant panel."""
 
 import os
+import re
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -34,10 +35,11 @@ def main() -> None:
         page.wait_for_url(f"{base_url}/")
         page.wait_for_load_state("networkidle")
 
-        page.get_by_role("button", name="Assistente").click()
+        page.get_by_role("button", name="Assistente CRM").click()
         panel = page.get_by_role("dialog")
-        expect(panel.get_by_role("heading", name="Taccuino di studio")).to_be_visible()
-        expect(panel.get_by_text("Da dove iniziamo?")).to_be_visible()
+        expect(panel.get_by_role("heading", name="Assistente CRM")).to_be_visible()
+        expect(panel.get_by_text("Portiamo avanti il lavoro.")).to_be_visible()
+        expect(panel.get_by_text(re.compile(r"Orari Europe/Rome"))).to_be_visible()
         panel.get_by_label("Messaggio per l’assistente").fill(
             "Cerca Officine Aurora e dammi il link alla scheda cliente."
         )
@@ -46,7 +48,7 @@ def main() -> None:
             timeout=90_000
         )
         panel.get_by_label("Messaggio per l’assistente").fill(
-            "Prepara una nota per Officine Aurora con testo: proposta UI da annullare."
+            "segna appuntamento per mario rossi alle 9 domani"
         )
         panel.get_by_role("button", name="Invia").click()
         expect(panel.get_by_text("Conferma richiesta")).to_be_visible(
@@ -62,10 +64,10 @@ def main() -> None:
         mobile.get_by_label("Password", exact=True).fill(password)
         mobile.get_by_role("button", name="Accedi").click()
         mobile.wait_for_url(f"{base_url}/")
-        mobile.get_by_role("button", name="Assistente").click()
+        mobile.get_by_role("button", name="Assistente CRM").click()
         mobile_panel = mobile.get_by_role("dialog")
         expect(
-            mobile_panel.get_by_role("heading", name="Taccuino di studio")
+            mobile_panel.get_by_role("heading", name="Assistente CRM")
         ).to_be_visible()
         overflow = mobile.evaluate(
             "document.documentElement.scrollWidth - document.documentElement.clientWidth"

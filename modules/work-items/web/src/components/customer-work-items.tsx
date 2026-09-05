@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { ClipboardList } from "lucide-react"
 
-import { EmptyState, TableLoader, formatDateTime, pb } from "@crm/app-core"
+import {
+  EmptyState,
+  TableLoader,
+  formatDateTime,
+  pb,
+  useClientManifest,
+} from "@crm/app-core"
 import {
   Table,
   TableBody,
@@ -20,6 +26,7 @@ export function CustomerWorkItems({
 }: {
   organizationId: string
 }) {
+  const manifest = useClientManifest()
   const items = useQuery({
     queryKey: ["customer-work-items", organizationId],
     queryFn: () =>
@@ -63,7 +70,9 @@ export function CustomerWorkItems({
                 </p>
               </TableCell>
               <TableCell>
-                {item.start_at ? formatDateTime(item.start_at) : "—"}
+                {item.start_at
+                  ? formatDateTime(item.start_at, manifest.timeZone)
+                  : "—"}
               </TableCell>
               <TableCell>
                 <WorkStatusBadge status={item.status} />

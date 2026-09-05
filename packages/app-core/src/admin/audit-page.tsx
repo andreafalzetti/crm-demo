@@ -19,8 +19,10 @@ import { PageHeader } from "../components/page-header"
 import { TableLoader } from "../components/table-loader"
 import { formatDateTime } from "../lib/format"
 import { pb } from "../lib/pocketbase"
+import { useClientManifest } from "../use-client-manifest"
 
 export function AuditPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const audit = useQuery({
     queryKey: ["audit"],
@@ -56,7 +58,7 @@ export function AuditPage() {
               {audit.data.items.map((event) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-sm whitespace-nowrap">
-                    {formatDateTime(String(event.created))}
+                    {formatDateTime(String(event.created), manifest.timeZone)}
                   </TableCell>
                   <TableCell>
                     {String(

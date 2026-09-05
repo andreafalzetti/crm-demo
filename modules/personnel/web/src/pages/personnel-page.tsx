@@ -9,6 +9,7 @@ import {
   TableLoader,
   pb,
   useAuth,
+  useClientManifest,
 } from "@crm/app-core"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Badge } from "@workspace/ui/components/badge"
@@ -35,6 +36,7 @@ import { formatDay } from "../lib/date"
 import type { LeaveRequest, StaffMember } from "../types"
 
 export function PersonnelPage() {
+  const manifest = useClientManifest()
   const { can } = useAuth()
   const queryClient = useQueryClient()
   const [staffOpen, setStaffOpen] = useState(false)
@@ -170,8 +172,8 @@ export function PersonnelPage() {
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
                             {leaveType(request.type)} ·{" "}
-                            {formatDay(request.start_date)}–
-                            {formatDay(request.end_date)}
+                            {formatDay(request.start_date, manifest.timeZone)}–
+                            {formatDay(request.end_date, manifest.timeZone)}
                           </p>
                         </div>
                         <Badge
