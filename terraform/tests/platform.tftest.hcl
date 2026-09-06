@@ -14,8 +14,8 @@ run "platform_plan" {
   }
 
   assert {
-    condition     = hcloud_server.platform.server_type == "cpx32"
-    error_message = "The default server type must remain the documented 4 vCPU / 8 GB starting point."
+    condition     = hcloud_server.platform.server_type == "cx23"
+    error_message = "The default server type must remain the documented cost-optimized CX23 starting point."
   }
 
   assert {
@@ -31,6 +31,16 @@ run "platform_plan" {
   assert {
     condition     = strcontains(hcloud_server.platform.user_data, "tailscale")
     error_message = "Cloud-init must install Tailscale."
+  }
+
+  assert {
+    condition     = strcontains(hcloud_server.platform.user_data, "install -d -o root -g root -m 0755 /run/sshd")
+    error_message = "Cloud-init must prepare the OpenSSH privilege-separation directory before validation."
+  }
+
+  assert {
+    condition     = strcontains(hcloud_server.platform.user_data, "/swapfile none swap sw 0 0")
+    error_message = "Cloud-init must configure persistent swap for the 4 GB server."
   }
 
   assert {

@@ -23,13 +23,13 @@ variable "environment" {
 variable "location" {
   description = "Hetzner Cloud location, for example fsn1, nbg1 or hel1."
   type        = string
-  default     = "fsn1"
+  default     = "hel1"
 }
 
 variable "server_type" {
-  description = "Hetzner server type. CPX32 is a sensible starting point for n8n and several lightweight CRM demos."
+  description = "Hetzner server type. CX23 is the cost-optimized starting point for this low-utilization CRM demo platform."
   type        = string
-  default     = "cpx32"
+  default     = "cx23"
 }
 
 variable "server_image" {

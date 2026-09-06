@@ -1,7 +1,7 @@
 project_name = "crm-platform"
 environment  = "production"
-location     = "fsn1"
-server_type  = "cpx32"
+location     = "hel1"
+server_type  = "cx23"
 
 admin_username = "deploy"
 

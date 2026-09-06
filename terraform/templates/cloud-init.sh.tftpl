@@ -44,6 +44,7 @@ MaxAuthTries 3
 ClientAliveInterval 300
 ClientAliveCountMax 2
 SSH_CONFIG
+install -d -o root -g root -m 0755 /run/sshd
 sshd -t
 systemctl restart ssh
 
@@ -107,4 +108,17 @@ install -d -o "$ADMIN_USERNAME" -g "$ADMIN_USERNAME" -m 0750 /opt/crm-platform
 install -d -o "$ADMIN_USERNAME" -g "$ADMIN_USERNAME" -m 0750 /srv/crm-data
 install -d -o root -g root -m 0700 /var/backups/crm-platform
 install -d -o root -g root -m 0755 /var/lib/crm-platform
+
+if ! swapon --show=NAME --noheadings | grep -Fxq /swapfile; then
+  if [[ ! -f /swapfile ]]; then
+    fallocate -l 2G /swapfile
+    chmod 0600 /swapfile
+    mkswap /swapfile >/dev/null
+  fi
+  swapon /swapfile
+fi
+if ! grep -Fqx '/swapfile none swap sw 0 0' /etc/fstab; then
+  printf '%s\n' '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
 date --iso-8601=seconds > /var/lib/crm-platform/bootstrap-complete
