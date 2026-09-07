@@ -1,6 +1,7 @@
 package assistant
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,6 +19,23 @@ type toolRequest struct {
 	Args      map[string]any `json:"args"`
 }
 
+const maxToolArgsJSONBytes = 12_000
+
+func decodeToolArgsJSON(value string) (map[string]any, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return map[string]any{}, nil
+	}
+	if len(value) > maxToolArgsJSONBytes {
+		return nil, errors.New("argomenti strumento troppo lunghi")
+	}
+	var args map[string]any
+	if err := json.Unmarshal([]byte(value), &args); err != nil || args == nil {
+		return nil, errors.New("argsJson deve contenere un oggetto JSON valido")
+	}
+	return args, nil
+}
+
 func (config runtimeConfig) handleTool(e *core.RequestEvent) error {
 	claims, actor, err := config.delegatedActor(e)
 	if err != nil {
@@ -26,6 +44,12 @@ func (config runtimeConfig) handleTool(e *core.RequestEvent) error {
 	var input toolRequest
 	if err := e.BindBody(&input); err != nil {
 		return e.BadRequestError("Parametri strumento non validi.", err)
+	}
+	if argsJSON := e.Request.URL.Query().Get("argsJson"); argsJSON != "" {
+		input.Args, err = decodeToolArgsJSON(argsJSON)
+		if err != nil {
+			return e.BadRequestError("Parametri strumento non validi.", err)
+		}
 	}
 	if input.Args == nil {
 		input.Args = map[string]any{}
