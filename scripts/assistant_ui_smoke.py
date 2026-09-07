@@ -56,6 +56,16 @@ def main() -> None:
         )
         panel.get_by_role("button", name="Annulla").click()
         expect(panel.get_by_text("Annullata")).to_be_visible(timeout=10_000)
+        conversation = panel.get_by_test_id("assistant-conversation")
+        page.wait_for_timeout(500)
+        distance_from_bottom = conversation.evaluate(
+            "node => node.scrollHeight - node.clientHeight - node.scrollTop"
+        )
+        if distance_from_bottom > 2:
+            raise RuntimeError(
+                "La conversazione non è scorsa fino al nuovo messaggio: "
+                f"mancano {distance_from_bottom}px"
+            )
         page.screenshot(path=screenshot, full_page=True)
 
         mobile = browser.new_page(viewport={"width": 390, "height": 844})

@@ -1,4 +1,4 @@
-import { type FormEvent, useRef, useState } from "react"
+import { type FormEvent, useEffect, useRef, useState } from "react"
 import {
   ArrowUp,
   Bot,
@@ -56,6 +56,22 @@ export function AssistantPanel() {
   const [sending, setSending] = useState(false)
   const [busyConfirmation, setBusyConfirmation] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const conversationViewport = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (messages.length === 0 && !error) return
+
+    const viewport = conversationViewport.current
+    if (!viewport) return
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches
+    viewport.scrollTo({
+      top: viewport.scrollHeight,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    })
+  }, [error, messages])
 
   function currentSessionId() {
     sessionId.current ??= newSessionId()
@@ -182,7 +198,11 @@ export function AssistantPanel() {
           </div>
         </SheetHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+        <div
+          ref={conversationViewport}
+          data-testid="assistant-conversation"
+          className="min-h-0 flex-1 overflow-y-auto px-5 py-5"
+        >
           {messages.length === 0 ? (
             <div className="flex min-h-full flex-col justify-center py-8">
               <div className="grid size-11 place-items-center rounded-2xl border bg-primary/5 text-primary shadow-sm">
