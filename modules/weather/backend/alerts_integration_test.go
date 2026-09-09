@@ -248,3 +248,58 @@ func TestEvaluateAlertsSkipsUnresolvedPlaces(t *testing.T) {
 		t.Fatalf("allerta su un luogo non geocodificato: %d", len(raised))
 	}
 }
+
+func TestBackfillLinksExistingRecordsAndIsIdempotent(t *testing.T) {
+	app := newTestApp(t)
+
+	organizations, err := app.FindCollectionByNameOrId("organizations")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Two customers at the same address, plus one with none: the shared address
+	// must produce a single place, and the empty one must be left alone.
+	for _, name := range []string{"Ferri & Co.", "Ferri Cantieri"} {
+		record := core.NewRecord(organizations)
+		record.Set("name", name)
+		record.Set("address", "Via Roma 12, Grottaferrata")
+		record.Set("status", "active")
+		if err := app.Save(record); err != nil {
+			t.Fatal(err)
+		}
+	}
+	blank := core.NewRecord(organizations)
+	blank.Set("name", "Senza indirizzo")
+	blank.Set("status", "prospect")
+	if err := app.Save(blank); err != nil {
+		t.Fatal(err)
+	}
+
+	// No geocoder: the backfill must still queue the places.
+	result, err := weather.Backfill(context.Background(), app, weather.NewGeocoderFromEnv(), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Linked != 2 {
+		t.Fatalf("collegati %d record, attesi 2", result.Linked)
+	}
+
+	places, err := app.FindRecordsByFilter("geo_places", "", "created", 10, 0, dbx.Params{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(places) != 1 {
+		t.Fatalf("attesa 1 riga geo_places condivisa, ottenute %d", len(places))
+	}
+	if places[0].GetString("query") != "Via Roma 12, Grottaferrata" {
+		t.Fatalf("query = %q", places[0].GetString("query"))
+	}
+
+	// Running it again must change nothing.
+	again, err := weather.Backfill(context.Background(), app, weather.NewGeocoderFromEnv(), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Linked != 0 || again.Skipped != 2 {
+		t.Fatalf("seconda passata: collegati %d, invariati %d", again.Linked, again.Skipped)
+	}
+}

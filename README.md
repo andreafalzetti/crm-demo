@@ -157,6 +157,16 @@ Tre job schedulati, registrati come cron PocketBase:
 | `weather-refresh` | ogni 30 min | aggiorna le previsioni dei luoghi attivi |
 | `weather-alerts` | 06:00 | valuta le regole a soglia sulle previsioni in cache |
 
+Gli indirizzi già presenti quando il modulo viene installato non passano dagli
+hook, quindi vanno collegati una volta:
+
+```bash
+mise exec -- go run ./apps/demo/server weather backfill --dir=./apps/demo/server/pb_data
+```
+
+Il comando è idempotente. `weather refresh` e `weather alerts` forzano invece i
+due job schedulati, utile per provare senza aspettare il cron.
+
 Le allerte compaiono sulla pagina `/meteo`, nella scheda cliente e nel contesto
 dell'assistente, che dispone anche degli strumenti `weather_forecast` e
 `weather_alerts`. Non esiste una collection di notifiche: il modulo si ferma

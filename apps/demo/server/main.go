@@ -21,6 +21,7 @@ func main() {
 	registerUserCommand(app)
 	registerSuperuserCommand(app)
 	registerDemoSeedCommand(app)
+	registerWeatherCommand(app)
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
