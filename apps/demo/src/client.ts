@@ -6,6 +6,7 @@ import { defineClientManifest } from "@crm/app-core"
 import { paymentsModule } from "@crm/payments"
 import { personnelModule } from "@crm/personnel"
 import { quotesModule } from "@crm/quotes"
+import { weatherModule } from "@crm/weather"
 import { workItemsModule } from "@crm/work-items"
 
 export const clientManifest = defineClientManifest({
@@ -15,6 +16,7 @@ export const clientManifest = defineClientManifest({
   locale: "it-IT",
   timeZone: "Europe/Rome",
   accent: "#087f48",
+  defaultLocation: "Via Domenico Cimarosa 12, Grottaferrata",
   modules: [
     addressBookModule,
     personnelModule,
@@ -22,6 +24,7 @@ export const clientManifest = defineClientManifest({
     workItemsModule,
     agendaModule,
     quotesModule,
+    weatherModule,
     paymentsModule,
     assistantModule,
   ],

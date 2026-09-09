@@ -57,6 +57,12 @@ export type ClientManifest = {
   locale: "it-IT"
   timeZone: string
   accent: string
+  /**
+   * Operating base of the client, as a free-text address. Surfaces that need a
+   * position without asking the browser — the weather widget when geolocation
+   * is denied — fall back to it.
+   */
+  defaultLocation?: string
   modules: CrmModule[]
 }
 

@@ -30,6 +30,10 @@ type assistantContext struct {
 	TimeZone                  string `json:"timeZone"`
 	CurrentDateTime           string `json:"currentDateTime"`
 	DefaultAppointmentMinutes int    `json:"defaultAppointmentMinutes"`
+	// WeatherAlerts rides along with every message so the assistant can open
+	// with "domani piove sul cantiere" instead of waiting to be asked. It is a
+	// digest, not the data: the weather_forecast tool has the detail.
+	WeatherAlerts []string `json:"weatherAlerts,omitempty"`
 }
 
 type confirmationView struct {
@@ -69,6 +73,7 @@ func (config runtimeConfig) handleChat(e *core.RequestEvent) error {
 	if err != nil {
 		return e.BadRequestError("Timezone del gestionale non valida.", err)
 	}
+	context.WeatherAlerts = openWeatherAlertHeadlines(e.App, e.Auth)
 
 	token, err := signDelegation(config.sharedSecret, delegationClaims{
 		UserID:    e.Auth.Id,

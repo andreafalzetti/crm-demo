@@ -88,6 +88,11 @@ trap cleanup EXIT INT TERM
 printf 'PB_ENCRYPTION_KEY=%s\n' "${pb_encryption_key}" >"${env_file}"
 printf 'CRM_ASSISTANT_SHARED_SECRET=%s\n' "${assistant_shared_secret}" >>"${env_file}"
 printf 'CRM_ASSISTANT_N8N_URL=http://n8n-assistant:5678/webhook/crm-assistant\n' >>"${env_file}"
+# Configuration, not credentials: both are safe in the env file and neither
+# comes from SSM. CRM_GEOCODER_URL can be pointed at https://photon.komoot.io
+# while the local index is being bootstrapped.
+printf 'CRM_GEOCODER_URL=%s\n' "${GEOCODER_URL:-http://photon:2322}" >>"${env_file}"
+printf 'CRM_WEATHER_USER_AGENT=%s\n' "${WEATHER_USER_AGENT:-designferri-crm/0.1 crm@designferri.it}" >>"${env_file}"
 
 ssh "${REMOTE_HOST}" "
   set -Eeuo pipefail

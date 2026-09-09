@@ -23,6 +23,7 @@
     "@crm/payments": "workspace:*",
     "@crm/personnel": "workspace:*",
     "@crm/quotes": "workspace:*",
+    "@crm/weather": "workspace:*",
     "@crm/work-items": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@tanstack/react-query": "^5.90.21",

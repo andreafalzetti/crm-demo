@@ -45,6 +45,19 @@ const MODULE_CATALOG = {
     goPath: "quotes",
     dependencies: ["address-book", "work-items"],
   },
+  weather: {
+    package: "@crm/weather",
+    symbol: "weatherModule",
+    goAlias: "weather",
+    goPath: "weather",
+    // No hard dependency: the module geolocates whichever address collections
+    // the instance happens to have, and works with neither.
+    dependencies: [],
+    // Opt-in like the assistant, because it is inert without runtime config:
+    // MET Norway rejects requests with no identifying User-Agent, and geocoding
+    // needs a Photon endpoint.
+    optIn: true,
+  },
   assistant: {
     package: "@crm/assistant",
     symbol: "assistantModule",
@@ -252,7 +265,7 @@ export async function createCrm(
   return { destination, ...options }
 }
 
-export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--timezone Europe/Rome] [--modules address-book,personnel,work-items,agenda,quotes,assistant]`
+export const usage = `Uso:\n  pnpm crm:new --slug cliente --name "Cliente S.r.l." [--short-name CS] [--accent #087f48] [--timezone Europe/Rome] [--modules address-book,personnel,work-items,agenda,quotes,weather,assistant]`
 
 if (
   process.argv[1] &&

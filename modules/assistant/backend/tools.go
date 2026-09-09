@@ -69,6 +69,10 @@ func (config runtimeConfig) handleTool(e *core.RequestEvent) error {
 		result, err = workItems(e.App, actor, input.Args)
 	case "quotes":
 		result, err = quotes(e.App, actor, input.Args)
+	case "weather_forecast":
+		result, err = weatherForecast(e.App, actor, input.Args)
+	case "weather_alerts":
+		result, err = weatherAlerts(e.App, actor, input.Args)
 	case "records":
 		result, err = findAssistantRecords(e.App, actor, input.Args)
 	case "prepare_action":

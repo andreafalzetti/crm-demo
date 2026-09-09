@@ -10,6 +10,7 @@ import (
 	_ "github.com/designferri/crm-demo/modules/assistant/backend/migrations"
 	_ "github.com/designferri/crm-demo/modules/personnel/backend/migrations"
 	_ "github.com/designferri/crm-demo/modules/quotes/backend/migrations"
+	_ "github.com/designferri/crm-demo/modules/weather/backend/migrations"
 	_ "github.com/designferri/crm-demo/modules/work-items/backend/migrations"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
@@ -32,6 +33,7 @@ func TestMigrationsAndRBAC(t *testing.T) {
 		"work_items", "work_item_assignments", "agenda_entries",
 		"quotes", "quote_lines",
 		"assistant_actions",
+		"geo_places", "weather_forecasts", "weather_alert_rules", "weather_alerts",
 	} {
 		collection, err := app.FindCollectionByNameOrId(name)
 		if err != nil {
@@ -64,8 +66,8 @@ func TestMigrationsAndRBAC(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(keys) != 59 {
-		t.Fatalf("expected 59 permissions, got %d", len(keys))
+	if len(keys) != 65 {
+		t.Fatalf("expected 65 permissions, got %d", len(keys))
 	}
 	if !platform.Can(app, user, "core.roles.manage") ||
 		!platform.Can(app, user, "addressbook.documents.delete") ||
@@ -73,7 +75,9 @@ func TestMigrationsAndRBAC(t *testing.T) {
 		!platform.Can(app, user, "workitems.items.create") ||
 		!platform.Can(app, user, "agenda.entries.delete") ||
 		!platform.Can(app, user, "quotes.generate") ||
-		!platform.Can(app, user, "assistant.use") {
+		!platform.Can(app, user, "assistant.use") ||
+		!platform.Can(app, user, "weather.forecast.read") ||
+		!platform.Can(app, user, "weather.rules.manage") {
 		t.Fatal("administrator is missing expected permissions")
 	}
 }

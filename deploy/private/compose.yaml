@@ -37,6 +37,39 @@ services:
       retries: 12
       start_period: 15s
 
+  photon:
+    build:
+      context: ./photon
+      args:
+        # Pinned as a pair with the index in scripts/photon-bootstrap.sh; see
+        # the Dockerfile for why the two versions must move together.
+        PHOTON_VERSION: "0.7.2"
+    image: crm-photon:0.7.2
+    restart: unless-stopped
+    # The index is bootstrapped once by scripts/photon-bootstrap.sh; the
+    # container only reads it.
+    volumes:
+      - /srv/photon-data/photon_data:/photon/photon_data
+    networks:
+      assistant:
+        aliases:
+          - photon
+    expose:
+      - "2322"
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://127.0.0.1:2322/api?q=roma&limit=1' | grep -q Feature"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+
   gateway:
     image: caddy:2.10.2-alpine
     restart: unless-stopped

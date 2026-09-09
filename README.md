@@ -14,6 +14,7 @@ Scaffold modulare per realizzare piccoli CRM verticali, uno per cliente, con Poc
 - mock del verticale medico con tipi di appuntamento, disponibilità e regole di distribuzione;
 - mock del modulo pagamenti, collegabile agli appuntamenti e predisposto per canali online e fisici;
 - audit trail per le modifiche alle collezioni operative e amministrative;
+- meteo per luogo con geocodifica degli indirizzi, previsioni a sette giorni e allerte a soglia;
 - assistente AI interno con strumenti CRM, delega RBAC e conferma umana delle scritture;
 - UI responsive, tema chiaro/scuro e design system condiviso basato su shadcn/ui;
 - migrazioni Go versionate e hook backend per le regole non esprimibili nel solo schema;
@@ -67,7 +68,8 @@ Il generatore copia l'app demo senza dati runtime o seed dimostrativi, modifica 
 - `personnel`: collaboratori, presenze, ferie e assenze;
 - `work-items`: incarichi, interventi, eventi o sedute;
 - `agenda`: calendario condiviso;
-- `quotes`: preventivi e generazione PDF.
+- `quotes`: preventivi e generazione PDF;
+- `weather`: meteo, previsioni e allerte, opt-in perché richiede un geocoder e un User-Agent MET.
 - `assistant`: assistente AI n8n/OpenRouter, opt-in perché richiede il servizio esterno e i secret runtime.
 
 È possibile creare una variante più piccola, per esempio:
@@ -95,6 +97,7 @@ modules/address-book/backend/ hook, permission catalog e migrazioni del modulo
 modules/personnel/             personale, presenze, ferie e assenze
 modules/work-items/            incarichi/interventi e assegnazioni
 modules/agenda/                calendario operativo condiviso
+modules/weather/               geocodifica, previsioni MET Norway e allerte a soglia
 modules/assistant/             pannello AI, API delegate, strumenti e proposte di modifica
 modules/quotes/                preventivi, righe e generatore PDF
 modules/appointments/web/      anteprima UX per prenotazioni e distribuzione
@@ -136,6 +139,73 @@ Variabili runtime richieste:
 CRM_ASSISTANT_SHARED_SECRET
 CRM_ASSISTANT_N8N_URL
 ```
+
+### Meteo
+
+Il modulo `weather` geolocalizza gli indirizzi già presenti nel gestionale
+(`organizations.address`, `work_items.location`), ne conserva le coordinate in
+`geo_places` e ci appoggia sopra le previsioni di
+[MET Norway](https://api.met.no/). Un luogo è condiviso da tutti i record che
+puntano allo stesso indirizzo, quindi dieci cantieri nello stesso comune
+costano una sola richiesta.
+
+Tre job schedulati, registrati come cron PocketBase:
+
+| Job | Cadenza | Cosa fa |
+| --- | --- | --- |
+| `weather-geocode` | ogni 5 min | risolve gli indirizzi in coda tramite Photon |
+| `weather-refresh` | ogni 30 min | aggiorna le previsioni dei luoghi attivi |
+| `weather-alerts` | 06:00 | valuta le regole a soglia sulle previsioni in cache |
+
+Le allerte compaiono sulla pagina `/meteo`, nella scheda cliente e nel contesto
+dell'assistente, che dispone anche degli strumenti `weather_forecast` e
+`weather_alerts`. Non esiste una collection di notifiche: il modulo si ferma
+alle allerte.
+
+I termini d'uso MET sono vincolanti e implementati nel client: `User-Agent`
+identificativo obbligatorio, coordinate troncate a quattro decimali, rispetto di
+`Expires` e uso di `If-Modified-Since`. I dati sono CC BY 4.0 e l'attribuzione
+è esposta nella UI.
+
+Variabili runtime:
+
+```text
+CRM_WEATHER_USER_AGENT   obbligatoria, es. "designferri-crm/0.1 crm@designferri.it"
+CRM_GEOCODER_URL         endpoint Photon, es. http://photon:2322
+CRM_WEATHER_API_URL      opzionale, per puntare a un'istanza MET diversa nei test
+```
+
+Senza `CRM_WEATHER_USER_AGENT` il client non parte, invece di farsi bloccare da
+MET con un 403. Senza `CRM_GEOCODER_URL` gli indirizzi restano in coda e la UI
+lo dichiara.
+
+#### Photon self-hosted
+
+Photon non pubblica un'immagine Docker ufficiale: `deploy/private/photon/`
+costruisce l'immagine attorno al JAR rilasciato su GitHub. La versione di Photon
+e l'indice scaricato da `scripts/photon-bootstrap.sh` sono una **coppia** e vanno
+aggiornati insieme, perché il formato dell'indice è legato alla versione:
+
+```text
+photon-db-it-250720 (20 lug 2025)  ->  Photon 0.7.2 (3 lug 2025)
+```
+
+Due limiti dell'upstream, verificati: l'alias `photon-db-it-latest.tar.bz2`
+risponde 404 e va usato il nome datato; l'estratto per l'Italia pesa 2,5 GB
+compressi e non viene ripubblicato di frequente. Per la geocodifica di indirizzi
+va bene comunque — le strade non si spostano — ma è una scelta da fare
+consapevolmente.
+
+Prima del primo deploy che abilita il modulo:
+
+```bash
+./scripts/photon-bootstrap.sh
+```
+
+Lo script verifica lo spazio libero prima di scaricare, controlla l'MD5
+pubblicato ed è idempotente. Finché l'indice non è pronto si può puntare
+`CRM_GEOCODER_URL` all'istanza pubblica `https://photon.komoot.io`, che è fair
+use e senza garanzie ma sufficiente per una demo.
 
 `appointments` e `payments` sono marcati `preview`: compaiono nella demo con dati mock ma non vengono ancora aggiunti dal generatore, non registrano permessi backend e non persistono dati. La decisione di prodotto e il modello concettuale del verticale medico sono descritti in [`docs/verticals/medical-practice.md`](docs/verticals/medical-practice.md).
 
