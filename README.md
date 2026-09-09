@@ -203,7 +203,16 @@ Prima del primo deploy che abilita il modulo:
 ```
 
 Lo script verifica lo spazio libero prima di scaricare, controlla l'MD5
-pubblicato ed è idempotente. Finché l'indice non è pronto si può puntare
+pubblicato ed è idempotente. Il servizio `photon` sta dietro il profilo Compose
+`geocoder` e non parte da solo:
+
+```bash
+docker compose -f deploy/private/compose.yaml --profile geocoder up -d
+```
+
+Serve una macchina capiente: l'indice Italia decompresso occupa diversi GB e
+l'Elasticsearch incorporato vuole RAM. Sulla VPS attuale (3,7 GB di RAM,
+38 GB di disco) non ci sta, e infatti il deploy punta all'istanza pubblica. Finché l'indice non è pronto si può puntare
 `CRM_GEOCODER_URL` all'istanza pubblica `https://photon.komoot.io`, che è fair
 use e senza garanzie ma sufficiente per una demo.
 

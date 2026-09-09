@@ -38,6 +38,12 @@ services:
       start_period: 15s
 
   photon:
+    # Behind a profile: the geocoder is opt-in because it needs the index
+    # bootstrapped first, and a machine that cannot host it should simply point
+    # CRM_GEOCODER_URL at the public instance instead of crash-looping.
+    # Start it with: docker compose --profile geocoder up -d
+    profiles:
+      - geocoder
     build:
       context: ./photon
       args:
