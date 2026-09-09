@@ -14,15 +14,23 @@ import (
 )
 
 const (
-	geocoderURLEnv = "CRM_GEOCODER_URL"
-	metBaseURLEnv  = "CRM_WEATHER_API_URL"
-	userAgentEnv   = "CRM_WEATHER_USER_AGENT"
+	geocoderURLEnv     = "CRM_GEOCODER_URL"
+	geocoderCountryEnv = "CRM_GEOCODER_COUNTRY"
+	geocoderBboxEnv    = "CRM_GEOCODER_BBOX"
+	metBaseURLEnv      = "CRM_WEATHER_API_URL"
+	userAgentEnv       = "CRM_WEATHER_USER_AGENT"
 
 	// forecastWindow bounds which jobs make a place "active" and therefore worth
 	// keeping a fresh forecast for.
 	forecastWindow = 8 * 24 * time.Hour
 
 	geocodeBatchSize = 25
+
+	// defaultCountry and defaultBbox narrow the geocoder to Italy. Without a
+	// bound, Photon answers with its best match anywhere on the planet: the POI
+	// name "Studio Lumen" resolved to a street in Yerevan.
+	defaultCountry = "IT"
+	defaultBbox    = "6.6,35.4,18.6,47.1"
 )
 
 type Module struct{}
@@ -98,6 +106,13 @@ type runtimeConfig struct {
 	met      *MetClient
 }
 
+func envOrDefault(key, fallback string) string {
+	if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+		return value
+	}
+	return fallback
+}
+
 func newRuntimeConfig() runtimeConfig {
 	userAgent := strings.TrimSpace(os.Getenv(userAgentEnv))
 	return runtimeConfig{
@@ -105,6 +120,9 @@ func newRuntimeConfig() runtimeConfig {
 			strings.TrimSpace(os.Getenv(geocoderURLEnv)),
 			userAgent,
 			&http.Client{Timeout: geocoderTimeout},
+		).WithCountry(
+			envOrDefault(geocoderCountryEnv, defaultCountry),
+			envOrDefault(geocoderBboxEnv, defaultBbox),
 		),
 		met: NewMetClient(
 			strings.TrimSpace(os.Getenv(metBaseURLEnv)),

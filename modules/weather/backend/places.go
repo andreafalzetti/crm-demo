@@ -175,6 +175,24 @@ func activePlaceIDs(app core.App, window time.Duration) ([]string, error) {
 		}
 	}
 
+	// Customer sites are a bounded, deliberate set, and the alert rules scoped to
+	// organizations have nothing to read without them. Leaving them out created a
+	// cold start with no way through: a place with no forecast was never active,
+	// so it never got its first forecast.
+	if _, err := app.FindCollectionByNameOrId("organizations"); err == nil {
+		organizations, err := app.FindRecordsByFilter("organizations", "place != '' && status != 'archived'", "name", 200, 0, dbx.Params{})
+		if err != nil {
+			return nil, err
+		}
+		for _, organization := range organizations {
+			id := organization.GetString("place")
+			if id != "" && !seen[id] {
+				seen[id] = true
+				ids = append(ids, id)
+			}
+		}
+	}
+
 	// Places already carrying a cached forecast stay warm: somebody looked at
 	// them, and letting the cache go stale would show them an old model run.
 	cached, err := app.FindRecordsByFilter("weather_forecasts", "place != ''", "-updated", 200, 0, dbx.Params{})

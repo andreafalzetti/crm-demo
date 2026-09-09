@@ -16,7 +16,7 @@ export const clientManifest = defineClientManifest({
   locale: "it-IT",
   timeZone: "Europe/Rome",
   accent: "#087f48",
-  defaultLocation: "Via Domenico Cimarosa 12, Grottaferrata",
+  defaultLocation: "Piazza Guglielmo Marconi, Grottaferrata",
   modules: [
     addressBookModule,
     personnelModule,

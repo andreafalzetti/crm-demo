@@ -21,6 +21,9 @@ const (
 	geocoderTimeout      = 10 * time.Second
 	geocoderMaxBodyBytes = 512 * 1024
 	geocoderQueryMaxLen  = 250
+
+	// geocoderCandidates is how many candidates are examined before giving up.
+	geocoderCandidates = 5
 )
 
 // GeocodeResult is the subset of a Photon feature the CRM stores. Everything
@@ -43,6 +46,11 @@ type Geocoder struct {
 	baseURL   string
 	userAgent string
 	client    *http.Client
+	// country is the ISO code a result must carry to be accepted, and bbox
+	// biases the search towards it. Both narrow a geocoder that would otherwise
+	// answer with the best match on the whole planet.
+	country string
+	bbox    string
 }
 
 func NewGeocoder(baseURL, userAgent string, client *http.Client) *Geocoder {
@@ -54,6 +62,17 @@ func NewGeocoder(baseURL, userAgent string, client *http.Client) *Geocoder {
 		userAgent: strings.TrimSpace(userAgent),
 		client:    client,
 	}
+}
+
+// WithCountry restricts accepted results to one country and biases the search
+// to its bounding box.
+func (g *Geocoder) WithCountry(code, bbox string) *Geocoder {
+	if g == nil {
+		return nil
+	}
+	g.country = strings.ToUpper(strings.TrimSpace(code))
+	g.bbox = strings.TrimSpace(bbox)
+	return g
 }
 
 func (g *Geocoder) Configured() bool { return g != nil && g.baseURL != "" }
@@ -91,16 +110,46 @@ func (g *Geocoder) Lookup(ctx context.Context, query string) (GeocodeResult, err
 		query = query[:geocoderQueryMaxLen]
 	}
 
-	endpoint := fmt.Sprintf("%s/api?q=%s&limit=1", g.baseURL, url.QueryEscape(query))
-	return g.fetchFeature(ctx, endpoint)
-}
-
-// fetchFeature performs the request shared by forward and reverse geocoding and
-// returns the first feature carrying usable coordinates.
-func (g *Geocoder) fetchFeature(ctx context.Context, endpoint string) (GeocodeResult, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	// More than one candidate is requested on purpose: Photon's own ranking put
+	// Scandiano above Rome for "Viale Europa 42, Roma", so the right answer may
+	// be further down the list.
+	endpoint := fmt.Sprintf("%s/api?q=%s&limit=%d", g.baseURL, url.QueryEscape(query), geocoderCandidates)
+	if g.bbox != "" {
+		endpoint += "&bbox=" + url.QueryEscape(g.bbox)
+	}
+	results, err := g.fetchFeatures(ctx, endpoint)
 	if err != nil {
 		return GeocodeResult{}, err
+	}
+	for _, candidate := range results {
+		if resultMatchesQuery(query, g.country, candidate) {
+			return candidate, nil
+		}
+	}
+	// Refusing beats guessing: an unresolved place is visible in the UI, a
+	// wrongly resolved one silently shows another town's weather.
+	return GeocodeResult{}, ErrPlaceNotFound
+}
+
+// fetchFeature returns the first usable candidate, for callers that do not
+// verify the result themselves.
+func (g *Geocoder) fetchFeature(ctx context.Context, endpoint string) (GeocodeResult, error) {
+	results, err := g.fetchFeatures(ctx, endpoint)
+	if err != nil {
+		return GeocodeResult{}, err
+	}
+	if len(results) == 0 {
+		return GeocodeResult{}, ErrPlaceNotFound
+	}
+	return results[0], nil
+}
+
+// fetchFeatures performs the request shared by forward and reverse geocoding and
+// returns every feature carrying usable coordinates, in Photon's own order.
+func (g *Geocoder) fetchFeatures(ctx context.Context, endpoint string) ([]GeocodeResult, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
 	}
 	if g.userAgent != "" {
 		request.Header.Set("User-Agent", g.userAgent)
@@ -108,22 +157,23 @@ func (g *Geocoder) fetchFeature(ctx context.Context, endpoint string) (GeocodeRe
 
 	response, err := g.client.Do(request)
 	if err != nil {
-		return GeocodeResult{}, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return GeocodeResult{}, fmt.Errorf("geocoder ha risposto %d", response.StatusCode)
+		return nil, fmt.Errorf("geocoder ha risposto %d", response.StatusCode)
 	}
 
 	body, err := io.ReadAll(io.LimitReader(response.Body, geocoderMaxBodyBytes))
 	if err != nil {
-		return GeocodeResult{}, err
+		return nil, err
 	}
 	var decoded photonResponse
 	if err := json.Unmarshal(body, &decoded); err != nil {
-		return GeocodeResult{}, fmt.Errorf("risposta geocoder illeggibile: %w", err)
+		return nil, fmt.Errorf("risposta geocoder illeggibile: %w", err)
 	}
 
+	results := make([]GeocodeResult, 0, len(decoded.Features))
 	for _, feature := range decoded.Features {
 		if len(feature.Geometry.Coordinates) < 2 {
 			continue
@@ -135,7 +185,7 @@ func (g *Geocoder) fetchFeature(ctx context.Context, endpoint string) (GeocodeRe
 		}
 		properties := feature.Properties
 		municipality := firstNonEmpty(properties.City, properties.District, properties.Name)
-		return GeocodeResult{
+		results = append(results, GeocodeResult{
 			Label:        photonLabel(properties.Street, properties.HouseNumber, properties.Name, municipality),
 			Latitude:     latitude,
 			Longitude:    longitude,
@@ -143,9 +193,9 @@ func (g *Geocoder) fetchFeature(ctx context.Context, endpoint string) (GeocodeRe
 			Province:     properties.County,
 			Postcode:     properties.Postcode,
 			CountryCode:  strings.ToUpper(properties.CountryCode),
-		}, nil
+		})
 	}
-	return GeocodeResult{}, ErrPlaceNotFound
+	return results, nil
 }
 
 // Reverse names a coordinate pair. The dashboard widget uses it so a browser

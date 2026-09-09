@@ -183,7 +183,17 @@ Variabili runtime:
 CRM_WEATHER_USER_AGENT   obbligatoria, es. "designferri-crm/0.1 crm@designferri.it"
 CRM_GEOCODER_URL         endpoint Photon, es. http://photon:2322
 CRM_WEATHER_API_URL      opzionale, per puntare a un'istanza MET diversa nei test
+CRM_GEOCODER_COUNTRY     ISO del paese atteso, default IT
+CRM_GEOCODER_BBOX        riquadro di ricerca, default l'Italia
 ```
+
+Le ultime due non sono cosmetiche. Photon risponde sempre col suo miglior
+risultato, per quanto scadente: senza vincoli, in produzione il nome "Studio
+Lumen" ha restituito una via di Yerevan e "Viale Europa 42, Roma" ha restituito
+Scandiano, 400 km più a nord. Il client ora chiede più candidati e scarta quelli
+che non concordano con paese e comune richiesti. Un indirizzo non risolto resta
+visibile nella UI; uno risolto male mostrerebbe in silenzio il meteo di un'altra
+città.
 
 Senza `CRM_WEATHER_USER_AGENT` il client non parte, invece di farsi bloccare da
 MET con un 403. Senza `CRM_GEOCODER_URL` gli indirizzi restano in coda e la UI
