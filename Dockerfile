@@ -15,6 +15,7 @@ COPY modules/assistant/web/package.json modules/assistant/web/package.json
 COPY modules/payments/web/package.json modules/payments/web/package.json
 COPY modules/personnel/web/package.json modules/personnel/web/package.json
 COPY modules/quotes/web/package.json modules/quotes/web/package.json
+COPY modules/weather/web/package.json modules/weather/web/package.json
 COPY modules/work-items/web/package.json modules/work-items/web/package.json
 
 RUN pnpm install --frozen-lockfile
