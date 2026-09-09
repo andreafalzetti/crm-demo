@@ -155,7 +155,7 @@ func RefreshActivePlaces(ctx context.Context, app core.App, client *MetClient) e
 	if !client.Configured() {
 		return nil
 	}
-	ids, err := activePlaceIDs(app, forecastWindow)
+	ids, err := ActivePlaceIDs(app, forecastWindow)
 	if err != nil {
 		return err
 	}

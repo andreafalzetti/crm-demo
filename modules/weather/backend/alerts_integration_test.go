@@ -3,6 +3,7 @@ package weather_test
 import (
 	"context"
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -301,5 +302,61 @@ func TestBackfillLinksExistingRecordsAndIsIdempotent(t *testing.T) {
 	}
 	if again.Linked != 0 || again.Skipped != 2 {
 		t.Fatalf("seconda passata: collegati %d, invariati %d", again.Linked, again.Skipped)
+	}
+}
+
+func TestActivePlacesIncludeJobsAlreadyUnderWay(t *testing.T) {
+	app := newTestApp(t)
+	place := seedPlace(t, app)
+
+	items, err := app.FindCollectionByNameOrId("work_items")
+	if err != nil {
+		t.Fatal(err)
+	}
+	organizations, err := app.FindCollectionByNameOrId("organizations")
+	if err != nil {
+		t.Fatal(err)
+	}
+	customer := core.NewRecord(organizations)
+	customer.Set("name", "Officine Aurora")
+	customer.Set("status", "active")
+	if err := app.Save(customer); err != nil {
+		t.Fatal(err)
+	}
+
+	// Started four days ago and still open: the crew is on site today, so the
+	// weather there matters even though the start date is outside the window.
+	running := core.NewRecord(items)
+	running.Set("code", "WI-001")
+	running.Set("title", "Sopralluogo preliminare")
+	running.Set("kind", "intervention")
+	running.Set("status", "in_progress")
+	running.Set("priority", "normal")
+	running.Set("organization", customer.Id)
+	running.Set("start_at", time.Now().AddDate(0, 0, -4))
+	running.Set("place", place.Id)
+	if err := app.Save(running); err != nil {
+		t.Fatal(err)
+	}
+
+	ids, err := weather.ActivePlaceIDs(app, 8*24*time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(ids, place.Id) {
+		t.Fatal("un cantiere in corso deve mantenere attivo il suo luogo")
+	}
+
+	// A cancelled job must not keep anything warm.
+	running.Set("status", "cancelled")
+	if err := app.Save(running); err != nil {
+		t.Fatal(err)
+	}
+	ids, err = weather.ActivePlaceIDs(app, 8*24*time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(ids, place.Id) {
+		t.Fatal("un intervento annullato non deve tenere attivo il luogo")
 	}
 }

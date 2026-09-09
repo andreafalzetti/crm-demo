@@ -225,7 +225,7 @@ func scheduledWorkItemsByPlace(app core.App, now time.Time) (map[string]string, 
 	}
 	items, err := app.FindRecordsByFilter(
 		"work_items",
-		"place != '' && status != 'cancelled' && start_at >= {:from} && start_at <= {:to}",
+		"place != '' && (status = 'in_progress' || (status = 'planned' && start_at >= {:from} && start_at <= {:to}))",
 		"start_at",
 		500,
 		0,

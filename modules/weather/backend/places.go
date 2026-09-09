@@ -144,17 +144,20 @@ func bindAddressHooks(app core.App, collection string) func(*core.RecordRequestE
 	}
 }
 
-// activePlaceIDs lists the places worth spending a forecast request on: those
+// ActivePlaceIDs lists the places worth spending a forecast request on: those
 // attached to a job scheduled in the window, plus any place explicitly asked for
 // recently. Everything else stays cold.
-func activePlaceIDs(app core.App, window time.Duration) ([]string, error) {
+func ActivePlaceIDs(app core.App, window time.Duration) ([]string, error) {
 	seen := map[string]bool{}
 	ids := []string{}
 
 	if _, err := app.FindCollectionByNameOrId("work_items"); err == nil {
+		// A job already under way is relevant whatever its start date: the crew
+		// is on site today, and the start-date window alone was dropping jobs
+		// that began more than a day ago.
 		items, err := app.FindRecordsByFilter(
 			"work_items",
-			"place != '' && status != 'cancelled' && start_at >= {:from} && start_at <= {:to}",
+			"place != '' && (status = 'in_progress' || (status = 'planned' && start_at >= {:from} && start_at <= {:to}))",
 			"start_at",
 			500,
 			0,
