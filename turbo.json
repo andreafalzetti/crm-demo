@@ -22,7 +22,20 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "OPENAI_API_KEY",
+        "CRM_ASSISTANT_SHARED_SECRET",
+        "CRM_ASSISTANT_N8N_URL",
+        "CRM_VOICE_API_URL",
+        "CRM_VOICE_MODEL",
+        "CRM_VOICE_BACKEND_MODEL",
+        "CRM_WEATHER_USER_AGENT",
+        "CRM_WEATHER_API_URL",
+        "CRM_GEOCODER_URL",
+        "CRM_GEOCODER_COUNTRY",
+        "CRM_GEOCODER_BBOX"
+      ]
     }
   }
 }

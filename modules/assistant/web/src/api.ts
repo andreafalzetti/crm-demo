@@ -1,6 +1,6 @@
 import { pb } from "@crm/app-core"
 
-import type { AssistantResponse } from "./types"
+import type { AssistantResponse, VoiceSessionCredentials } from "./types"
 
 export function sendMessage(
   message: string,
@@ -21,4 +21,22 @@ export function resolveConfirmation(
     `/api/crm/assistant/actions/${id}/${decision}`,
     { method: "POST" }
   )
+}
+
+export function createVoiceSession(sdp: string) {
+  return pb.send<VoiceSessionCredentials>("/api/crm/assistant/voice/session", {
+    method: "POST",
+    body: { sdp },
+  })
+}
+
+export function runVoiceTool(
+  sessionId: string,
+  operation: string,
+  args: Record<string, unknown>
+) {
+  return pb.send<{ result: unknown }>("/api/crm/assistant/voice/tools", {
+    method: "POST",
+    body: { sessionId, operation, args },
+  })
 }

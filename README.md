@@ -70,7 +70,7 @@ Il generatore copia l'app demo senza dati runtime o seed dimostrativi, modifica 
 - `agenda`: calendario condiviso;
 - `quotes`: preventivi e generazione PDF;
 - `weather`: meteo, previsioni e allerte, opt-in perché richiede un geocoder e un User-Agent MET.
-- `assistant`: assistente AI n8n/OpenRouter, opt-in perché richiede il servizio esterno e i secret runtime.
+- `assistant`: assistente AI n8n/OpenRouter, opt-in perché richiede il servizio esterno e i secret runtime; include una prova voce GPT-Live opzionale.
 
 È possibile creare una variante più piccola, per esempio:
 
@@ -139,6 +139,28 @@ Variabili runtime richieste:
 CRM_ASSISTANT_SHARED_SECRET
 CRM_ASSISTANT_N8N_URL
 ```
+
+#### Prova voce (sperimentale)
+
+Il modulo `assistant` espone anche la pagina `/voce`, che collega il browser a
+GPT-Live via WebRTC. La sessione nasce sul server PocketBase, che possiede la
+API key; il browser scambia solo l'offerta SDP. Il ragionamento è delegato a un
+modello backend, ma ogni chiamata di funzione rientra nel CRM e passa dalla
+stessa allow-list e dagli stessi permessi RBAC dell'assistente testuale. Le
+scritture restano proposte in attesa di conferma e compaiono nella pagina.
+
+Serve una `OPENAI_API_KEY` nel processo Go (non una variabile Vite):
+
+```bash
+OPENAI_API_KEY=sk-... mise exec -- pnpm dev:demo
+```
+
+Variabili opzionali: `CRM_VOICE_MODEL` (default `gpt-live-1`),
+`CRM_VOICE_BACKEND_MODEL` (default `gpt-5.6-terra`) e `CRM_VOICE_API_URL`
+(default `https://api.openai.com/v1`, utile per test o proxy). Il microfono
+richiede `localhost` o HTTPS. La sessione è fatturata da OpenAI al minuto, più
+il modello backend, quindi per ora è una prova e non un canale produttivo: il
+centralino telefonico richiederà il percorso SIP.
 
 ### Meteo
 

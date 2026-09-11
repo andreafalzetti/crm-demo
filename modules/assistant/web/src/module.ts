@@ -1,6 +1,10 @@
+import { createElement } from "react"
+import { AudioLines } from "lucide-react"
+
 import type { CrmModule } from "@crm/app-core"
 
 import { AssistantPanel } from "./assistant-panel"
+import { VoicePage } from "./voice/voice-page"
 
 export const assistantModule: CrmModule = {
   id: "assistant",
@@ -13,8 +17,15 @@ export const assistantModule: CrmModule = {
     { id: "quotes", optional: true },
   ],
   permissions: ["assistant.use"],
-  navigation: [],
-  routes: [],
+  navigation: [
+    {
+      label: "Prova voce",
+      to: "/voce",
+      icon: AudioLines,
+      permission: "assistant.use",
+    },
+  ],
+  routes: [{ path: "voce", element: createElement(VoicePage) }],
   shellPanels: [
     {
       id: "assistant-panel",

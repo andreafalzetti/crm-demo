@@ -55,35 +55,42 @@ func (config runtimeConfig) handleTool(e *core.RequestEvent) error {
 		input.Args = map[string]any{}
 	}
 
-	var result any
-	switch input.Operation {
-	case "search_customers":
-		result, err = searchCustomers(e.App, actor, input.Args)
-	case "customer_context":
-		result, err = customerContext(e.App, actor, input.Args)
-	case "team_availability":
-		result, err = teamAvailability(e.App, actor, input.Args)
-	case "agenda":
-		result, err = agendaEntries(e.App, actor, input.Args)
-	case "work_items":
-		result, err = workItems(e.App, actor, input.Args)
-	case "quotes":
-		result, err = quotes(e.App, actor, input.Args)
-	case "weather_forecast":
-		result, err = weatherForecast(e.App, actor, input.Args)
-	case "weather_alerts":
-		result, err = weatherAlerts(e.App, actor, input.Args)
-	case "records":
-		result, err = findAssistantRecords(e.App, actor, input.Args)
-	case "prepare_action":
-		result, err = prepareAction(e.App, actor, claims.SessionID, input.Args)
-	default:
-		return e.BadRequestError("Operazione strumento non consentita.", nil)
-	}
+	result, err := dispatchTool(e.App, actor, claims.SessionID, input.Operation, input.Args)
 	if err != nil {
 		return e.BadRequestError(err.Error(), err)
 	}
 	return e.JSON(http.StatusOK, result)
+}
+
+// dispatchTool is the single allow-list for assistant operations. The chat
+// workflow reaches it with a delegation token, the voice session with the
+// browser's own authenticated session: authorization lives in the operations,
+// not in the transport.
+func dispatchTool(app core.App, actor *core.Record, sessionID, operation string, args map[string]any) (any, error) {
+	switch operation {
+	case "search_customers":
+		return searchCustomers(app, actor, args)
+	case "customer_context":
+		return customerContext(app, actor, args)
+	case "team_availability":
+		return teamAvailability(app, actor, args)
+	case "agenda":
+		return agendaEntries(app, actor, args)
+	case "work_items":
+		return workItems(app, actor, args)
+	case "quotes":
+		return quotes(app, actor, args)
+	case "weather_forecast":
+		return weatherForecast(app, actor, args)
+	case "weather_alerts":
+		return weatherAlerts(app, actor, args)
+	case "records":
+		return findAssistantRecords(app, actor, args)
+	case "prepare_action":
+		return prepareAction(app, actor, sessionID, args)
+	default:
+		return nil, errors.New("operazione strumento non consentita")
+	}
 }
 
 func (config runtimeConfig) delegatedActor(e *core.RequestEvent) (delegationClaims, *core.Record, error) {

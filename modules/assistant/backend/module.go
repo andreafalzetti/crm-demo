@@ -24,10 +24,18 @@ func (Module) Permissions() []platform.PermissionDefinition { return Permissions
 func (Module) Register(app *pocketbase.PocketBase) {
 	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		config := runtimeConfig{
-			sharedSecret: strings.TrimSpace(os.Getenv(sharedSecretEnv)),
-			workflowURL:  strings.TrimSpace(os.Getenv(workflowURLEnv)),
+			sharedSecret:      strings.TrimSpace(os.Getenv(sharedSecretEnv)),
+			workflowURL:       strings.TrimSpace(os.Getenv(workflowURLEnv)),
+			openAIKey:         strings.TrimSpace(os.Getenv(openAIKeyEnv)),
+			voiceAPIURL:       envOrDefault(voiceAPIURLEnv, defaultVoiceAPIURL),
+			voiceModel:        envOrDefault(voiceLiveModelEnv, defaultVoiceLiveModel),
+			voiceBackendModel: envOrDefault(voiceBackendModelEnv, defaultVoiceBackendModel),
 		}
 		e.Router.POST("/api/crm/assistant/chat", config.handleChat).
+			Bind(apis.RequireAuth("users"), platform.Require("assistant.use"))
+		e.Router.POST("/api/crm/assistant/voice/session", config.handleVoiceSession).
+			Bind(apis.RequireAuth("users"), platform.Require("assistant.use"))
+		e.Router.POST("/api/crm/assistant/voice/tools", config.handleVoiceTool).
 			Bind(apis.RequireAuth("users"), platform.Require("assistant.use"))
 		e.Router.POST("/api/crm/assistant/tools", config.handleTool)
 		e.Router.POST("/api/crm/assistant/actions/{id}/confirm", config.handleConfirm).
@@ -39,6 +47,10 @@ func (Module) Register(app *pocketbase.PocketBase) {
 }
 
 type runtimeConfig struct {
-	sharedSecret string
-	workflowURL  string
+	sharedSecret      string
+	workflowURL       string
+	openAIKey         string
+	voiceAPIURL       string
+	voiceModel        string
+	voiceBackendModel string
 }

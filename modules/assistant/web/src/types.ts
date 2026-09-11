@@ -23,3 +23,24 @@ export type ConversationMessage = {
   confirmations?: Confirmation[]
   links?: RecordLink[]
 }
+
+export type VoiceStatus = "idle" | "connecting" | "active" | "closed" | "error"
+
+export type VoiceSessionCredentials = {
+  sessionId: string
+  sdp: string
+}
+
+export type VoiceToolRun = {
+  id: string
+  name: string
+  phase: "start" | "done"
+  result?: unknown
+  error?: string
+}
+
+export type VoiceTranscriptLine = {
+  id: string
+  role: "user" | "assistant"
+  text: string
+}
