@@ -44,11 +44,13 @@ export class VoiceSession {
   private closeTimeout?: number
   private sessionId = ""
   private finalized = false
+  private readonly audio: HTMLAudioElement
+  private readonly handlers: VoiceHandlers
 
-  constructor(
-    private readonly audio: HTMLAudioElement,
-    private readonly handlers: VoiceHandlers
-  ) {}
+  constructor(audio: HTMLAudioElement, handlers: VoiceHandlers) {
+    this.audio = audio
+    this.handlers = handlers
+  }
 
   get id() {
     return this.sessionId
