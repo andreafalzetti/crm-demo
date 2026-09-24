@@ -283,7 +283,7 @@ Con l'app già avviata, `scripts/ui_smoke.py` verifica inoltre i cinque moduli, 
 
 `scripts/assistant_ui_smoke.py` verifica separatamente apertura del pannello,
 invio di un messaggio e rendering del link restituito dall'agente. Accetta
-`E2E_BASE_URL` per collaudare anche la demo privata pubblicata via Tailscale.
+`E2E_BASE_URL` per collaudare anche la demo pubblica `https://crm.designferri.eu`.
 
 ## Produzione
 
@@ -307,9 +307,11 @@ prima di inizializzare o applicare il modulo.
 
 Il deploy privato costruisce il frontend e il server PocketBase in una singola
 immagine, applica le migrazioni, crea l'utente demo in modo idempotente e carica
-lo scenario dimostrativo. PocketBase resta dietro un gateway locale e la console
-`/_/` non viene inoltrata. Il servizio è esposto in HTTPS soltanto tramite
-Tailscale Serve.
+lo scenario dimostrativo. PocketBase resta dietro un gateway Caddy e la console
+`/_/` non viene inoltrata. Il servizio è pubblicato in HTTPS su
+`https://crm.designferri.eu`: il record DNS `A`/`AAAA` del sottodominio deve
+puntare all'IP pubblico della VPS e Caddy ottiene da solo il certificato
+Let's Encrypt.
 
 ```bash
 make deploy-private

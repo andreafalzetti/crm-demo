@@ -146,4 +146,4 @@ ssh "${REMOTE_HOST}" "
   exit 1
 "
 
-echo "Deploy ${commit} completato. Configura Tailscale Serve verso http://127.0.0.1:8080."
+echo "Deploy ${commit} completato. La demo è pubblica su https://crm.designferri.eu."
