@@ -1,9 +1,8 @@
 {
 	admin off
-	auto_https off
 }
 
-:8080 {
+(app) {
 	encode zstd gzip
 
 	@pocketbaseAdmin path /_/ /_/*
@@ -15,6 +14,16 @@
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 	}
+}
+
+crm.designferri.eu {
+	import app
+
+	reverse_proxy crm-demo:8090
+}
+
+:8080 {
+	import app
 
 	reverse_proxy crm-demo:8090 {
 		header_up X-Forwarded-Proto https
