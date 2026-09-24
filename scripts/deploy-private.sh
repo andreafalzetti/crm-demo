@@ -15,7 +15,7 @@ PB_KEY_PARAMETER="/crm-demo/production/demo/pocketbase/encryption-key"
 APP_PASSWORD_PARAMETER="/crm-demo/production/demo/app-user/password"
 SUPERUSER_PASSWORD_PARAMETER="/crm-demo/production/demo/pocketbase/superuser-password"
 ASSISTANT_SECRET_PARAMETER="/crm-demo/production/demo/assistant/shared-secret"
-APP_USER_EMAIL="${CRM_APP_USER_EMAIL:-demo@designferri.local}"
+APP_USER_EMAIL="${CRM_APP_USER_EMAIL:-info@designferri.eu}"
 SUPERUSER_EMAIL="${CRM_SUPERUSER_EMAIL:-admin@designferri.local}"
 
 for required_command in aws git mktemp scp ssh; do

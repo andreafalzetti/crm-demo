@@ -319,7 +319,7 @@ make deploy-private
 
 I secret vengono letti dal profilo AWS personale `andrea` e trasmessi alla VPS
 via SSH; non sono salvati nel repository o negli argomenti dei processi. Per
-leggere la password dell'utente `demo@designferri.local` nel proprio terminale:
+leggere la password dell'utente `info@designferri.eu` nel proprio terminale:
 
 ```bash
 aws ssm get-parameter \
