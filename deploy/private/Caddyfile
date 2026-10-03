@@ -29,3 +29,7 @@ crm.designferri.eu {
 		header_up X-Forwarded-Proto https
 	}
 }
+
+# Other apps on this VPS (Ambrosia) install their own site blocks in
+# /opt/crm-platform/gateway-sites: this repo does not need to know them.
+import /etc/caddy/sites/*.caddy

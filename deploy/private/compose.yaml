@@ -89,6 +89,8 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Site blocks of the other apps on this VPS, imported by the Caddyfile.
+      - /opt/crm-platform/gateway-sites:/etc/caddy/sites:ro
       - caddy_data:/data
       - caddy_config:/config
     read_only: true

@@ -317,6 +317,12 @@ Let's Encrypt.
 make deploy-private
 ```
 
+Il gateway Caddy serve anche altre applicazioni ospitate sulla stessa VPS:
+importa i file `*.caddy` da `/opt/crm-platform/gateway-sites`, montata in
+sola lettura. Ogni applicazione installa lì il proprio sito con il proprio
+deploy (oggi il gestionale di Ambrosia, `ambrosia.designferri.eu`), senza
+toccare questo repository.
+
 I secret vengono letti dal profilo AWS personale `andrea` e trasmessi alla VPS
 via SSH; non sono salvati nel repository o negli argomenti dei processi. Per
 leggere la password dell'utente `info@designferri.eu` nel proprio terminale:
