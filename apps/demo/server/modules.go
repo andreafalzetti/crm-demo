@@ -29,3 +29,7 @@ func crmModules() []platform.Module {
 		assistant.Module{},
 	}
 }
+
+func crmEmails() platform.Emails {
+	return platform.Emails{Name: "Ferri & Co.", ShortName: "FC", Accent: "#087f48", TimeZone: "Europe/Rome"}
+}

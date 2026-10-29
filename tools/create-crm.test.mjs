@@ -99,6 +99,10 @@ test("crea un'app client dal template senza copiare i dati runtime", async () =>
   assert.match(serverModules, /quotes\.Module/)
   assert.match(
     serverModules,
+    /platform\.Emails\{Name: "Acme S\.r\.l\.", ShortName: "[^"]+", Accent: "#123456", TimeZone: "Europe\/Rome"\}/
+  )
+  assert.match(
+    serverModules,
     /quotes\.Module\{IssuerName: "Acme S\.r\.l\.", AccentHex: "#123456"\}/
   )
   assert.match(
