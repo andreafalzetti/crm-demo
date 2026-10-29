@@ -14,6 +14,7 @@ import {
   NotFoundPage,
   OverviewPage,
   ProtectedRoute,
+  ResetPasswordPage,
   RolesPage,
   UsersPage,
 } from "@crm/app-core"
@@ -25,6 +26,11 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage manifest={clientManifest} />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPasswordPage />,
     errorElement: <RouteErrorPage />,
   },
   {

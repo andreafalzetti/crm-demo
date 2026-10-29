@@ -17,6 +17,7 @@ func main() {
 	app := pocketbase.New()
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{Automigrate: false})
 	platform.Register(app, crmModules()...)
+	platform.RegisterEmails(app, crmEmails())
 	registerStaticAssets(app)
 	registerUserCommand(app)
 	registerSuperuserCommand(app)

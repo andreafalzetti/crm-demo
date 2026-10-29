@@ -184,7 +184,9 @@ function serverModuleRegistry(options) {
     return `\t\t${MODULE_CATALOG[module].goAlias}.Module{},`
   })
 
-  return `package main\n\nimport (\n\t"github.com/designferri/crm-demo/internal/platform"\n${imports.join("\n")}\n)\n\nfunc crmModules() []platform.Module {\n\treturn []platform.Module{\n${registrations.join("\n")}\n\t}\n}\n`
+  const emails = `platform.Emails{Name: ${JSON.stringify(options.name)}, ShortName: ${JSON.stringify(options.shortName)}, Accent: ${JSON.stringify(options.accent)}, TimeZone: ${JSON.stringify(options.timeZone)}}`
+
+  return `package main\n\nimport (\n\t"github.com/designferri/crm-demo/internal/platform"\n${imports.join("\n")}\n)\n\nfunc crmModules() []platform.Module {\n\treturn []platform.Module{\n${registrations.join("\n")}\n\t}\n}\n\nfunc crmEmails() platform.Emails {\n\treturn ${emails}\n}\n`
 }
 
 export async function createCrm(
