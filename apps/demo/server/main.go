@@ -21,6 +21,7 @@ func main() {
 	registerStaticAssets(app)
 	registerUserCommand(app)
 	registerSuperuserCommand(app)
+	quietInstaller(app)
 	registerDemoSeedCommand(app)
 	registerWeatherCommand(app)
 
