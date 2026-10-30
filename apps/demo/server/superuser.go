@@ -8,6 +8,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// quietInstaller replaces PocketBase's installer, which on a database with
+// no superuser opens the browser on the console: every test server on an
+// empty folder did it. It only says how to create one.
+func quietInstaller(app *pocketbase.PocketBase) {
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		e.InstallerFunc = func(core.App, *core.Record, string) error {
+			app.Logger().Info("Nessun superuser della console: go run ./apps/demo/server app-superuser EMAIL --password-stdin --dir=./apps/demo/server/pb_data")
+			return nil
+		}
+		return e.Next()
+	})
+}
+
 func registerSuperuserCommand(app *pocketbase.PocketBase) {
 	var passwordStdin bool
 	command := &cobra.Command{
