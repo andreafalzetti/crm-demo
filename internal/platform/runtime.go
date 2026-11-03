@@ -52,6 +52,7 @@ func Register(app *pocketbase.PocketBase, modules ...Module) {
 
 	registerAudit(app, auditedCollections)
 	registerAccessSafety(app)
+	RegisterSupport(app)
 }
 
 func Require(key string) *hook.Handler[*core.RequestEvent] {
