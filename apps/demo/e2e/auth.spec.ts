@@ -6,6 +6,7 @@ const EXPECTED_MODULES = [
   "assistant",
   "personnel",
   "quotes",
+  "weather",
   "work-items",
 ]
 

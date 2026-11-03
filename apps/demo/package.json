@@ -17,16 +17,16 @@
   "dependencies": {
     "@crm/address-book": "workspace:*",
     "@crm/agenda": "workspace:*",
+    "@crm/app-core": "workspace:*",
     "@crm/appointments": "workspace:*",
     "@crm/assistant": "workspace:*",
-    "@crm/app-core": "workspace:*",
     "@crm/payments": "workspace:*",
     "@crm/personnel": "workspace:*",
     "@crm/quotes": "workspace:*",
     "@crm/weather": "workspace:*",
     "@crm/work-items": "workspace:*",
-    "@workspace/ui": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
+    "@workspace/ui": "workspace:*",
     "lucide-react": "^0.577.0",
     "pocketbase": "^0.26.8",
     "react": "^19.2.6",
@@ -34,8 +34,8 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@eslint/js": "^10",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4",
     "@types/node": "^24",
     "@types/react": "^19",
