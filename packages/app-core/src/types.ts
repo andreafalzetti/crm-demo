@@ -76,6 +76,8 @@ export type UserRecord = RecordModel & {
   active: boolean
   must_change_password: boolean
   roles: string[]
+  /** Of F2 Labs' support: derived from the roles by the server. */
+  support?: boolean
 }
 
 export type SessionPayload = {
