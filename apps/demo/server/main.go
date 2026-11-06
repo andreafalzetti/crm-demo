@@ -33,7 +33,7 @@ func main() {
 func registerUserCommand(app *pocketbase.PocketBase) {
 	userCommand := &cobra.Command{Use: "app-user", Short: "Gestisce gli utenti applicativi CRM"}
 	var passwordStdin bool
-	var ifNotExists bool
+	var ifNotExists, orUpdate bool
 	createCommand := &cobra.Command{
 		Use:          "create EMAIL [PASSWORD]",
 		Short:        "Crea il primo utente applicativo",
@@ -66,6 +66,14 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 				return err
 			}
 			user := core.NewRecord(collection)
+			// The local development user (make dev-user): the same email and
+			// password in every gestionale, put back as it was each time.
+			if existing, err := app.FindAuthRecordByEmail("users", args[0]); err == nil {
+				if !orUpdate {
+					return fmt.Errorf("l'utente %s c'è già", args[0])
+				}
+				user = existing
+			}
 			user.SetEmail(args[0])
 			user.SetPassword(password)
 			user.SetVerified(true)
@@ -73,10 +81,15 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 			user.Set("active", true)
 			user.Set("must_change_password", false)
 			user.Set("roles", []string{role.Id})
+			created := user.IsNew()
 			if err := app.Save(user); err != nil {
 				return err
 			}
-			fmt.Printf("Utente %s creato con ruolo %s.\n", args[0], roleKey)
+			if created {
+				fmt.Printf("Utente %s creato con ruolo %s.\n", args[0], roleKey)
+			} else {
+				fmt.Printf("Utente %s aggiornato: password, ruolo %s e accesso rimessi.\n", args[0], roleKey)
+			}
 			return nil
 		},
 	}
@@ -84,6 +97,7 @@ func registerUserCommand(app *pocketbase.PocketBase) {
 	createCommand.Flags().String("role", "administrator", "Chiave del ruolo")
 	createCommand.Flags().BoolVar(&passwordStdin, "password-stdin", false, "Legge la password da una singola riga su stdin")
 	createCommand.Flags().BoolVar(&ifNotExists, "if-not-exists", false, "Non modifica l'utente se esiste già")
+	createCommand.Flags().BoolVar(&orUpdate, "or-update", false, "Se l'utente esiste già, gli rimette password, nome, ruolo e accesso")
 	userCommand.AddCommand(createCommand)
 	app.RootCmd.AddCommand(userCommand)
 }

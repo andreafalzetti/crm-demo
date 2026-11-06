@@ -30,24 +30,24 @@ mise install
 mise exec -- pnpm install
 ```
 
-Crea il primo utente applicativo; il comando inizializza automaticamente database e migrazioni:
+Avvia frontend e PocketBase con un solo comando:
+
+```bash
+make dev
+```
+
+Apri `http://localhost:5173` ed entra con l'utente di sviluppo, che `make dev` crea da solo appena il server è partito ed è lo stesso in tutti i gestionali di F2 Labs: `dev@f2labs.test`, password `sviluppo-locale`, ruolo Administrator. Sta solo nel database locale; `make dev-user` lo rimette a posto se la password è cambiata. Per un CRM creato con `pnpm crm:new`: `make dev APP=acme`. L'API risponde su `http://127.0.0.1:8090`; Vite inoltra `/api` al backend, quindi in produzione possono essere pubblicati sotto lo stesso dominio.
+
+Senza make, `mise exec -- pnpm dev:demo` avvia lo stesso, senza l'utente di sviluppo. Un altro utente applicativo (il comando inizializza da solo database e migrazioni):
 
 ```bash
 mise exec -- pnpm crm:user:create admin@example.test 'UnaPasswordLunga!' --name 'Amministratore'
 ```
 
-Avvia frontend e PocketBase con un solo comando:
-
-```bash
-mise exec -- pnpm dev:demo
-```
-
-Apri `http://localhost:5173`. L'API risponde su `http://127.0.0.1:8090`; Vite inoltra `/api` al backend, quindi in produzione possono essere pubblicati sotto lo stesso dominio.
-
 Per popolare la demo con clienti, personale, interventi, agenda e un preventivo collegati tra loro:
 
 ```bash
-mise exec -- pnpm crm:demo:seed -- admin@example.test
+mise exec -- pnpm crm:demo:seed -- dev@f2labs.test
 ```
 
 Il seed è idempotente e usa l'utente indicato come autore dei record.
